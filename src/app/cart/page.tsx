@@ -17,10 +17,34 @@ export default function CartPage() {
   const [deliveryMethod, setDeliveryMethod] = React.useState<"delivery" | "pickup">("pickup");
   const { products } = useProductStore();
   const [mounted, setMounted] = useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted || items.length === 0) return;
+    
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const interval = setInterval(() => {
+      if (isHovered) return;
+      
+      const cardWidth = 264; // min-w-[240px] (240px) + gap-6 (24px)
+      const maxScroll = container.scrollWidth - container.clientWidth;
+      
+      if (container.scrollLeft >= maxScroll - 10) {
+        container.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        container.scrollTo({ left: container.scrollLeft + cardWidth, behavior: "smooth" });
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [mounted, items, isHovered]);
 
   const displayProducts = mounted ? products : STATIC_PRODUCTS;
   const suggestedProducts = displayProducts.slice(0, 3);
@@ -299,7 +323,14 @@ export default function CartPage() {
             </p>
           </div>
           
-          <div className="no-scrollbar flex gap-6 overflow-x-auto pb-8 -mx-2 px-2">
+          <div 
+            ref={scrollRef}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onTouchStart={() => setIsHovered(true)}
+            onTouchEnd={() => setIsHovered(false)}
+            className="no-scrollbar flex gap-6 overflow-x-auto pb-8 -mx-2 px-2 scroll-smooth"
+          >
             {displayProducts.filter(p => !items.find(item => item.id === p.id)).slice(0, 6).map((product) => (
               <div key={product.id} className="min-w-[240px] w-[240px]">
                 <ProductCard product={product} />
