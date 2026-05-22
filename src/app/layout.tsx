@@ -20,6 +20,26 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Importadora Martin Store | Catálogo Digital",
   description: "Encuentra los mejores productos industriales y herramientas en nuestro catálogo digital. Pedidos rápidos por WhatsApp.",
+  openGraph: {
+    title: "Importadora Martin Store | Catálogo Digital",
+    description: "Encuentra los mejores productos industriales y herramientas en nuestro catálogo digital. Pedidos rápidos por WhatsApp.",
+    siteName: "Importadora Martin Store",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 1200,
+        alt: "Importadora Martin Store Logo",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Importadora Martin Store | Catálogo Digital",
+    description: "Encuentra los mejores productos industriales y herramientas en nuestro catálogo digital. Pedidos rápidos por WhatsApp.",
+    images: ["/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({
