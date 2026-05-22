@@ -30,7 +30,7 @@ export default function CheckoutPage() {
       <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-foreground uppercase tracking-tight">Tu carrito está vacío</h1>
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/catalogo")}
           className="mt-6 rounded-2xl bg-black px-8 py-4 font-bold text-white shadow-lg shadow-black/10 active:scale-95 transition-transform"
         >
           Volver a la tienda

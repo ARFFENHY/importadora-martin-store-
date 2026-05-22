@@ -40,7 +40,7 @@ export default function CartPage() {
           Tu carrito está esperando ser llenado con las mejores herramientas.
         </p>
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/catalogo")}
           className="mt-10 rounded-2xl bg-black px-12 py-5 font-black text-white uppercase tracking-widest shadow-xl active:scale-95 transition-transform"
         >
           Ir a la Tienda
