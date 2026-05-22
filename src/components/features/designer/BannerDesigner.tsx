@@ -161,8 +161,8 @@ export function BannerDesigner() {
     const maxW = container.clientWidth - padding;
     const maxH = container.clientHeight - padding;
 
-    const nativeW = currentDesign.width;
-    const nativeH = currentDesign.height;
+    const nativeW = currentDesign.width || 1080;
+    const nativeH = currentDesign.height || 1080;
 
     // Calculate scale factor
     let scale = 1;
@@ -651,8 +651,8 @@ export function BannerDesigner() {
     try {
       // 1. Create native resolution offscreen Canvas
       const canvas = document.createElement("canvas");
-      canvas.width = currentDesign.width;
-      canvas.height = currentDesign.height;
+      canvas.width = currentDesign.width || 1080;
+      canvas.height = currentDesign.height || 1080;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
