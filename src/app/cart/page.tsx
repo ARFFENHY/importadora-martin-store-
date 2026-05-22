@@ -331,6 +331,7 @@ export default function CartPage() {
                 Productos recomendados para vos
               </p>
             </div>
+          </div>
             
           <div 
             className="relative overflow-hidden -mx-3 px-3 py-2"

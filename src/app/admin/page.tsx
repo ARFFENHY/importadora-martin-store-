@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import html2canvas from "html2canvas";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, 
@@ -156,6 +157,7 @@ function getContrastColor(hex: string | undefined) {
 }
 
 export default function AdminPage() {
+  const qrContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   
   // Stores
@@ -487,11 +489,11 @@ export default function AdminPage() {
 
   const handleDownloadQR = async () => {
     try {
+      if (!qrContainerRef.current) return;
       setProductToast("Preparando descarga del código QR...");
       
-      const response = await fetch(qrUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2 });
+      const blobUrl = canvas.toDataURL("image/png");
       
       const link = document.createElement('a');
       link.href = blobUrl;
@@ -499,7 +501,6 @@ export default function AdminPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
 
       setProductToast("Código QR descargado con éxito");
       setTimeout(() => setProductToast(null), 3000);
@@ -514,18 +515,21 @@ export default function AdminPage() {
   const handleShareQR = async () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
+        if (!qrContainerRef.current) return;
         setProductToast("Preparando código QR para compartir...");
         
-        const response = await fetch(qrUrl);
-        const blob = await response.blob();
-        const file = new File([blob], `qr_${(localStore.name || store.name || 'catalogo').toLowerCase().replace(/\s+/g, '_')}.png`, { type: 'image/png' });
-        
-        await navigator.share({
-          files: [file],
-          title: `Catálogo de ${localStore.name || store.name}`,
-          text: `¡Hola! Te comparto nuestro catálogo online. Escanea el código QR o ingresa a: ${storeUrl}`,
-        });
-        setProductToast(null);
+        const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2 });
+        canvas.toBlob(async (blob) => {
+          if (!blob) throw new Error("Canvas to Blob failed");
+          const file = new File([blob], `qr_${(localStore.name || store.name || 'catalogo').toLowerCase().replace(/\s+/g, '_')}.png`, { type: 'image/png' });
+          
+          await navigator.share({
+            files: [file],
+            title: `Catálogo de ${localStore.name || store.name}`,
+            text: `¡Hola! Te comparto nuestro catálogo online. Escanea el código QR o ingresa a: ${storeUrl}`,
+          });
+          setProductToast(null);
+        }, "image/png");
       } catch (error) {
         console.error("Error sharing QR:", error);
         handleDownloadQR();
@@ -731,7 +735,7 @@ export default function AdminPage() {
     );
   }
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(storeUrl)}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&ecc=H&data=${encodeURIComponent(storeUrl)}`;
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32 text-zinc-900 font-sans">
@@ -2237,21 +2241,32 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="w-full md:w-80 bg-zinc-900 rounded-[2rem] p-8 border border-zinc-800 text-white flex flex-col items-center justify-between text-center relative overflow-hidden shadow-xl shadow-zinc-900/10 min-h-[400px]">
+                <div ref={qrContainerRef} className="w-full md:w-80 bg-zinc-900 rounded-[2rem] p-8 border border-zinc-800 text-white flex flex-col items-center justify-between text-center relative overflow-hidden shadow-xl shadow-zinc-900/10 min-h-[400px]">
                   {/* Background Glow */}
                   <div className="absolute top-[-50%] right-[-50%] w-[100%] h-[100%] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
                   
                   <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 relative z-10">Código QR Oficial</h4>
 
-                  <div className="my-6 bg-white p-4 rounded-2xl relative z-10 shadow-lg">
+                  <div className="my-6 bg-white p-4 rounded-2xl relative z-10 shadow-lg flex items-center justify-center">
                     <Image 
                       src={qrUrl}
                       alt="Marketing QR Code"
                       width={180}
                       height={180}
-                      className="rounded-lg"
+                      className="rounded-lg relative"
                       unoptimized
                     />
+                    {store.logoUrl && (
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-[3px] border-white z-20 overflow-hidden">
+                        <Image 
+                          src={store.logoUrl}
+                          alt="Logo"
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="relative z-10 w-full space-y-4">
