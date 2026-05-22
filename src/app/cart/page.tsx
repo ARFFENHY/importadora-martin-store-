@@ -20,13 +20,7 @@ export default function CartPage() {
   const { colors, store } = useConfigStore();
   const [mounted, setMounted] = useState(false);
 
-  // Carousel States
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleItems, setVisibleItems] = useState(4);
-  const [transitionEnabled, setTransitionEnabled] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -60,88 +54,7 @@ export default function CartPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Effect to re-enable transitions after an instant snap jump
-  useEffect(() => {
-    if (!transitionEnabled) {
-      let frameId = requestAnimationFrame(() => {
-        frameId = requestAnimationFrame(() => {
-          setTransitionEnabled(true);
-        });
-      });
-      return () => cancelAnimationFrame(frameId);
-    }
-  }, [transitionEnabled]);
 
-  const handleNext = () => {
-    if (!isLoopable) return;
-    setTransitionEnabled(true);
-    setCurrentIndex((prev) => {
-      if (prev >= suggestedProducts.length) {
-        return 0;
-      }
-      return prev + 1;
-    });
-  };
-
-  const handlePrev = () => {
-    if (!isLoopable) return;
-    if (currentIndex <= 0) {
-      // Snap instantly to the end clone, then animate to N - 1
-      setTransitionEnabled(false);
-      setCurrentIndex(suggestedProducts.length);
-      setTimeout(() => {
-        setTransitionEnabled(true);
-        setCurrentIndex(suggestedProducts.length - 1);
-      }, 50);
-    } else {
-      setTransitionEnabled(true);
-      setCurrentIndex((prev) => prev - 1);
-    }
-  };
-
-  // Auto-play Interval
-  useEffect(() => {
-    if (!mounted || items.length === 0 || !isLoopable) return;
-
-    // Check if the current device is a touch screen (coarse pointer) to prevent sticky hover states
-    const isTouchDevice = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
-    const shouldPause = isHovered && !isTouchDevice;
-
-    if (shouldPause) return;
-
-    const interval = setInterval(() => {
-      handleNext();
-    }, 3000); // 3 seconds active pacing
-
-    return () => clearInterval(interval);
-  }, [mounted, items.length, isLoopable, isHovered]);
-
-  // Touch Swipe Gesture Handlers
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-    setIsHovered(true);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    setIsHovered(false);
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      handleNext();
-    } else if (isRightSwipe) {
-      handlePrev();
-    }
-  };
 
 
   if (items.length === 0) {
@@ -419,48 +332,19 @@ export default function CartPage() {
               </p>
             </div>
             
-            {/* Carousel Navigation Buttons */}
-            {suggestedProducts.length > visibleItems && (
-              <div className="flex gap-2">
-                <button
-                  onClick={handlePrev}
-                  className="p-2.5 rounded-full bg-white border border-border text-foreground hover:bg-black hover:text-white shadow-sm transition-all duration-300 active:scale-90 flex items-center justify-center"
-                  aria-label="Anterior"
-                >
-                  <ChevronLeft size={16} strokeWidth={3} />
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="p-2.5 rounded-full bg-white border border-border text-foreground hover:bg-black hover:text-white shadow-sm transition-all duration-300 active:scale-90 flex items-center justify-center"
-                  aria-label="Siguiente"
-                >
-                  <ChevronRight size={16} strokeWidth={3} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          
           <div 
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            className="relative overflow-hidden -mx-3 px-3 py-2 cursor-grab active:cursor-grabbing"
+            className="relative overflow-hidden -mx-3 px-3 py-2"
           >
             <motion.div 
-              className="flex animate-drag"
-              animate={{ x: `-${currentIndex * (100 / visibleItems)}%` }}
-              transition={transitionEnabled ? { type: "spring", stiffness: 200, damping: 26 } : { duration: 0 }}
-              onAnimationComplete={() => {
-                if (currentIndex === suggestedProducts.length) {
-                  setTransitionEnabled(false);
-                  setCurrentIndex(0);
-                }
+              className="flex"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ 
+                repeat: Infinity, 
+                ease: "linear", 
+                duration: suggestedProducts.length * 3 // Adjust duration based on number of products
               }}
             >
-              {extendedProducts.map((product, idx) => (
+              {[...suggestedProducts, ...suggestedProducts, ...suggestedProducts].map((product, idx) => (
                 <div 
                   key={`${product.id}-${idx}`} 
                   className="w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 shrink-0 px-3"
@@ -470,30 +354,6 @@ export default function CartPage() {
               ))}
             </motion.div>
           </div>
-
-          {/* Dots Indicator */}
-          {suggestedProducts.length > visibleItems && (
-            <div className="flex justify-center gap-2 mt-8">
-              {Array.from({ length: suggestedProducts.length }).map((_, idx) => {
-                const isActive = (currentIndex % suggestedProducts.length) === idx;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setTransitionEnabled(true);
-                      setCurrentIndex(idx);
-                    }}
-                    className="h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: isActive ? "24px" : "8px",
-                      backgroundColor: isActive ? colors.primary : "#D4D4D8" 
-                    }}
-                    aria-label={`Ir al slide ${idx + 1}`}
-                  />
-                );
-              })}
-            </div>
-          )}
         </section>
 
       </div>
