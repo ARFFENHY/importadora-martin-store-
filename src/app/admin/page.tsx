@@ -39,7 +39,8 @@ import {
   ShieldCheck,
   EyeOff,
   Camera,
-  Upload
+  Upload,
+  Folder
 } from "lucide-react";
 import { useConfigStore, ColorsConfig } from "@/store/useConfigStore";
 import { useProductStore } from "@/store/useProductStore";
@@ -198,6 +199,9 @@ export default function AdminPage() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [newCatOpen, setNewCatOpen] = useState(false);
   const [newCatName, setNewCatName] = useState("");
+
+  const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
+  const [manageCatName, setManageCatName] = useState("");
 
   const [productForm, setProductForm] = useState({
     name: "",
@@ -436,6 +440,23 @@ export default function AdminPage() {
     setProductForm(prev => ({ ...prev, category: newCatName.trim() }));
     setNewCatName("");
     setNewCatOpen(false);
+  };
+
+  const handleAddCategoryFromManage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manageCatName.trim()) return;
+    addCategory(manageCatName.trim());
+    setManageCatName("");
+    setProductToast("Categoría agregada con éxito");
+    setTimeout(() => setProductToast(null), 3000);
+  };
+
+  const handleDeleteCategoryFromManage = (id: string) => {
+    if (window.confirm("¿Seguro que deseas eliminar esta categoría? Los productos asociados se moverán a la categoría 'Otros'.")) {
+      deleteCategory(id);
+      setProductToast("Categoría eliminada");
+      setTimeout(() => setProductToast(null), 3000);
+    }
   };
 
   const handleCopyLink = () => {
@@ -1116,6 +1137,14 @@ export default function AdminPage() {
                       <option key={c.id} value={c.name}>{c.name}</option>
                     ))}
                   </select>
+
+                  <button
+                    onClick={() => setIsManageCategoriesOpen(true)}
+                    className="bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap cursor-pointer"
+                  >
+                    <Folder size={16} className="text-zinc-600" />
+                    Categorías
+                  </button>
 
                   <button
                     onClick={handleOpenAddModal}
@@ -2543,6 +2572,116 @@ export default function AdminPage() {
             </motion.div>
           )}
 
+      </AnimatePresence>
+
+      {/* CATEGORIES MANAGEMENT MODAL DIALOG */}
+      <AnimatePresence>
+        {isManageCategoriesOpen && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsManageCategoriesOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Box */}
+            <div className="flex min-h-screen items-center justify-center p-6">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 30 }}
+                className="relative w-full max-w-lg rounded-3xl bg-white border border-zinc-200 p-8 shadow-2xl text-zinc-900 z-10 space-y-6"
+              >
+                {/* Close trigger */}
+                <button 
+                  onClick={() => setIsManageCategoriesOpen(false)}
+                  className="absolute top-6 right-6 p-2 rounded-full hover:bg-zinc-100 transition-colors cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+
+                <div>
+                  <h3 className="text-xl font-black uppercase tracking-tight text-black flex items-center gap-2">
+                    <Folder className="text-blue-600" size={22} />
+                    Gestionar Categorías
+                  </h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">Agrega nuevas categorías o elimina las que ya no necesites para tus productos.</p>
+                </div>
+
+                {/* Add Category Form */}
+                <form onSubmit={handleAddCategoryFromManage} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={manageCatName}
+                    onChange={(e) => setManageCatName(e.target.value)}
+                    placeholder="Nueva categoría (ej: Rotomartillos)..."
+                    className="flex-1 bg-zinc-50 border border-zinc-200 focus:border-blue-500/50 rounded-2xl py-3 px-4 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all font-bold"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="bg-black text-white hover:bg-zinc-800 px-5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-md flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus size={16} />
+                    Agregar
+                  </button>
+                </form>
+
+                {/* Categories List */}
+                <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider block ml-1">
+                    Categorías Activas ({categories.length})
+                  </label>
+                  {categories.length === 0 ? (
+                    <p className="text-xs text-zinc-400 text-center py-4 italic">No hay categorías registradas.</p>
+                  ) : (
+                    categories.map((cat) => {
+                      const isDefault = cat.name.toLowerCase() === "otros" || cat.slug === "otros";
+                      return (
+                        <div 
+                          key={cat.id} 
+                          className="flex items-center justify-between p-3.5 bg-zinc-50 hover:bg-zinc-100/80 border border-zinc-200/80 rounded-2xl transition-all"
+                        >
+                          <span className="text-xs font-black text-zinc-800 tracking-wide">{cat.name}</span>
+                          {isDefault ? (
+                            <span className="text-[9px] bg-zinc-200 text-zinc-600 font-black px-2.5 py-1 rounded-full uppercase tracking-wider select-none">
+                              Por Defecto
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCategoryFromManage(cat.id)}
+                              className="text-zinc-400 hover:text-red-600 p-1.5 rounded-xl hover:bg-red-50 transition-colors cursor-pointer active:scale-90"
+                              title="Eliminar Categoría"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-zinc-100 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsManageCategoriesOpen(false)}
+                    className="bg-zinc-100 hover:bg-zinc-200 text-zinc-800 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+
+              </motion.div>
+            </div>
+
+          </div>
+        )}
       </AnimatePresence>
 
       {/* Floating Success Toast Notification */}
