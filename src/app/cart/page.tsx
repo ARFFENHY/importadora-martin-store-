@@ -3,51 +3,117 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronLeft, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Info, Truck, Building2 } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Info, Truck, Building2, ChevronRight } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { formatPrice } from "@/lib/utils";
 import { PRODUCTS as STATIC_PRODUCTS } from "@/data/products";
 import { ProductCard } from "@/components/features/products/ProductCard";
 import { motion } from "framer-motion";
 import { useProductStore } from "@/store/useProductStore";
+import { useConfigStore } from "@/store/useConfigStore";
 
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, getTotal, clearCart } = useCartStore();
   const [deliveryMethod, setDeliveryMethod] = React.useState<"delivery" | "pickup">("pickup");
   const { products } = useProductStore();
+  const { colors } = useConfigStore();
   const [mounted, setMounted] = useState(false);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Carousel States
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleItems, setVisibleItems] = useState(4);
   const [isHovered, setIsHovered] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const displayProducts = mounted ? products : STATIC_PRODUCTS;
+  const suggestedProducts = displayProducts
+    .filter((p) => !items.find((item) => item.id === p.id))
+    .slice(0, 10);
+
+  // Responsive Carousel Widths
   useEffect(() => {
-    if (!mounted || items.length === 0) return;
-    
-    const container = scrollRef.current;
-    if (!container) return;
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setVisibleItems(1);
+      } else if (window.innerWidth < 1024) {
+        setVisibleItems(2);
+      } else if (window.innerWidth < 1280) {
+        setVisibleItems(3);
+      } else {
+        setVisibleItems(4);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const maxIndex = Math.max(0, suggestedProducts.length - visibleItems);
+
+  const handleNext = () => {
+    if (maxIndex <= 0) return;
+    setCurrentIndex((prev) => {
+      if (prev >= maxIndex) {
+        return 0; // Seamless loop to the start
+      }
+      return prev + 1;
+    });
+  };
+
+  const handlePrev = () => {
+    if (maxIndex <= 0) return;
+    setCurrentIndex((prev) => {
+      if (prev <= 0) {
+        return maxIndex; // Seamless loop to the end
+      }
+      return prev - 1;
+    });
+  };
+
+  // Auto-play Interval
+  useEffect(() => {
+    if (!mounted || items.length === 0 || maxIndex <= 0 || isHovered) return;
 
     const interval = setInterval(() => {
-      if (isHovered) return;
-      
-      const cardWidth = 264; // min-w-[240px] (240px) + gap-6 (24px)
-      const maxScroll = container.scrollWidth - container.clientWidth;
-      
-      if (container.scrollLeft >= maxScroll - 10) {
-        container.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        container.scrollTo({ left: container.scrollLeft + cardWidth, behavior: "smooth" });
-      }
-    }, 3000);
+      handleNext();
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, [mounted, items, isHovered]);
+  }, [mounted, items.length, maxIndex, isHovered, currentIndex]);
 
-  const displayProducts = mounted ? products : STATIC_PRODUCTS;
-  const suggestedProducts = displayProducts.slice(0, 3);
+  // Touch Swipe Gesture Handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+    setIsHovered(true);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    setIsHovered(false);
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrev();
+    }
+  };
+
 
   if (items.length === 0) {
     return (
@@ -313,30 +379,93 @@ export default function CartPage() {
 
         {/* Carrusel de Sugerencias */}
         <section className="mt-20 border-t border-border pt-12">
-          <div className="flex flex-col mb-8">
-            <h3 className="text-xl font-black text-foreground uppercase tracking-tight flex items-center gap-2">
-              <ShoppingBag size={20} className="text-primary" />
-              Completa tu compra
-            </h3>
-            <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">
-              Productos recomendados para vos
-            </p>
+          <div className="flex items-end justify-between mb-6">
+            <div className="flex flex-col">
+              <h3 className="text-xl font-black text-foreground uppercase tracking-tight flex items-center gap-2">
+                <ShoppingBag size={20} style={{ color: colors.primary }} />
+                Completa tu compra
+              </h3>
+              <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">
+                Productos recomendados para vos
+              </p>
+            </div>
+            
+            {/* Carousel Navigation Buttons */}
+            {suggestedProducts.length > visibleItems && (
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrev}
+                  className="p-2.5 rounded-full bg-white border border-border text-foreground hover:bg-black hover:text-white shadow-sm transition-all duration-300 active:scale-90 flex items-center justify-center"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft size={16} strokeWidth={3} />
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="p-2.5 rounded-full bg-white border border-border text-foreground hover:bg-black hover:text-white shadow-sm transition-all duration-300 active:scale-90 flex items-center justify-center"
+                  aria-label="Siguiente"
+                >
+                  <ChevronRight size={16} strokeWidth={3} />
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Autoplay Progress Line */}
+          {suggestedProducts.length > visibleItems && (
+            <div className="w-full h-[3px] bg-zinc-200/50 rounded-full overflow-hidden mb-8 relative">
+              <motion.div 
+                key={`${currentIndex}-${isHovered}`}
+                initial={{ width: "0%" }}
+                animate={isHovered ? { width: "0%" } : { width: "100%" }}
+                transition={{ duration: isHovered ? 0 : 4, ease: "linear" }}
+                className="h-full"
+                style={{ backgroundColor: colors.primary }}
+              />
+            </div>
+          )}
           
           <div 
-            ref={scrollRef}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onTouchStart={() => setIsHovered(true)}
-            onTouchEnd={() => setIsHovered(false)}
-            className="no-scrollbar flex gap-6 overflow-x-auto pb-8 -mx-2 px-2 scroll-smooth"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            className="relative overflow-hidden -mx-3 px-3 py-2 cursor-grab active:cursor-grabbing"
           >
-            {displayProducts.filter(p => !items.find(item => item.id === p.id)).slice(0, 6).map((product) => (
-              <div key={product.id} className="min-w-[240px] w-[240px]">
-                <ProductCard product={product} />
-              </div>
-            ))}
+            <motion.div 
+              className="flex animate-drag"
+              animate={{ x: `-${currentIndex * (100 / visibleItems)}%` }}
+              transition={{ type: "spring", stiffness: 200, damping: 26 }}
+            >
+              {suggestedProducts.map((product) => (
+                <div 
+                  key={product.id} 
+                  className="w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 shrink-0 px-3"
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </motion.div>
           </div>
+
+          {/* Dots Indicator */}
+          {suggestedProducts.length > visibleItems && (
+            <div className="flex justify-center gap-2 mt-8">
+              {Array.from({ length: suggestedProducts.length - visibleItems + 1 }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className="h-2 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: currentIndex === idx ? "24px" : "8px",
+                    backgroundColor: currentIndex === idx ? colors.primary : "#D4D4D8" 
+                  }}
+                  aria-label={`Ir al slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
       </div>
