@@ -23,6 +23,7 @@ export default function CartPage() {
   // Carousel States
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleItems, setVisibleItems] = useState(4);
+  const [transitionEnabled, setTransitionEnabled] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -35,6 +36,11 @@ export default function CartPage() {
   const suggestedProducts = displayProducts
     .filter((p) => !items.find((item) => item.id === p.id))
     .slice(0, 10);
+
+  const isLoopable = suggestedProducts.length > visibleItems;
+  const extendedProducts = isLoopable
+    ? [...suggestedProducts, ...suggestedProducts.slice(0, visibleItems)]
+    : suggestedProducts;
 
   // Responsive Carousel Widths
   useEffect(() => {
@@ -54,31 +60,46 @@ export default function CartPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const maxIndex = Math.max(0, suggestedProducts.length - visibleItems);
+  // Effect to re-enable transitions after an instant snap jump
+  useEffect(() => {
+    if (!transitionEnabled) {
+      const timeout = setTimeout(() => {
+        setTransitionEnabled(true);
+      }, 50);
+      return () => clearTimeout(timeout);
+    }
+  }, [transitionEnabled]);
 
   const handleNext = () => {
-    if (maxIndex <= 0) return;
+    if (!isLoopable) return;
+    setTransitionEnabled(true);
     setCurrentIndex((prev) => {
-      if (prev >= maxIndex) {
-        return 0; // Seamless loop to the start
+      if (prev >= suggestedProducts.length) {
+        return 0;
       }
       return prev + 1;
     });
   };
 
   const handlePrev = () => {
-    if (maxIndex <= 0) return;
-    setCurrentIndex((prev) => {
-      if (prev <= 0) {
-        return maxIndex; // Seamless loop to the end
-      }
-      return prev - 1;
-    });
+    if (!isLoopable) return;
+    if (currentIndex <= 0) {
+      // Snap instantly to the end clone, then animate to N - 1
+      setTransitionEnabled(false);
+      setCurrentIndex(suggestedProducts.length);
+      setTimeout(() => {
+        setTransitionEnabled(true);
+        setCurrentIndex(suggestedProducts.length - 1);
+      }, 50);
+    } else {
+      setTransitionEnabled(true);
+      setCurrentIndex((prev) => prev - 1);
+    }
   };
 
   // Auto-play Interval
   useEffect(() => {
-    if (!mounted || items.length === 0 || maxIndex <= 0) return;
+    if (!mounted || items.length === 0 || !isLoopable) return;
 
     // Check if the current device is a touch screen (coarse pointer) to prevent sticky hover states
     const isTouchDevice = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
@@ -91,7 +112,7 @@ export default function CartPage() {
     }, 3000); // 3 seconds active pacing
 
     return () => clearInterval(interval);
-  }, [mounted, items.length, maxIndex, isHovered, currentIndex]);
+  }, [mounted, items.length, isLoopable, isHovered, currentIndex]);
 
   // Touch Swipe Gesture Handlers
   const minSwipeDistance = 50;
@@ -150,7 +171,7 @@ export default function CartPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push("/")} className="p-2 -ml-2 hover:bg-zinc-100 rounded-full transition-colors">
+          <button onClick={() => router.push("/catalogo")} className="p-2 -ml-2 hover:bg-zinc-100 rounded-full transition-colors">
             <ChevronLeft size={24} />
           </button>
           <h1 className="text-xl font-black text-foreground uppercase tracking-tight">Mi Carrito</h1>
@@ -417,19 +438,6 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* Autoplay Progress Line */}
-          {suggestedProducts.length > visibleItems && (
-            <div className="w-full h-[3px] bg-zinc-200/50 rounded-full overflow-hidden mb-8 relative">
-              <motion.div 
-                key={`${currentIndex}-${isHovered}`}
-                initial={{ width: "0%" }}
-                animate={isHovered ? { width: "0%" } : { width: "100%" }}
-                transition={{ duration: isHovered ? 0 : 3, ease: "linear" }}
-                className="h-full"
-                style={{ backgroundColor: colors.primary }}
-              />
-            </div>
-          )}
           
           <div 
             onMouseEnter={() => setIsHovered(true)}
@@ -442,11 +450,17 @@ export default function CartPage() {
             <motion.div 
               className="flex animate-drag"
               animate={{ x: `-${currentIndex * (100 / visibleItems)}%` }}
-              transition={{ type: "spring", stiffness: 200, damping: 26 }}
+              transition={transitionEnabled ? { type: "spring", stiffness: 200, damping: 26 } : { duration: 0 }}
+              onAnimationComplete={() => {
+                if (currentIndex === suggestedProducts.length) {
+                  setTransitionEnabled(false);
+                  setCurrentIndex(0);
+                }
+              }}
             >
-              {suggestedProducts.map((product) => (
+              {extendedProducts.map((product, idx) => (
                 <div 
-                  key={product.id} 
+                  key={`${product.id}-${idx}`} 
                   className="w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 shrink-0 px-3"
                 >
                   <ProductCard product={product} />
@@ -458,18 +472,24 @@ export default function CartPage() {
           {/* Dots Indicator */}
           {suggestedProducts.length > visibleItems && (
             <div className="flex justify-center gap-2 mt-8">
-              {Array.from({ length: suggestedProducts.length - visibleItems + 1 }).map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentIndex(idx)}
-                  className="h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: currentIndex === idx ? "24px" : "8px",
-                    backgroundColor: currentIndex === idx ? colors.primary : "#D4D4D8" 
-                  }}
-                  aria-label={`Ir al slide ${idx + 1}`}
-                />
-              ))}
+              {Array.from({ length: suggestedProducts.length }).map((_, idx) => {
+                const isActive = (currentIndex % suggestedProducts.length) === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setTransitionEnabled(true);
+                      setCurrentIndex(idx);
+                    }}
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{ 
+                      width: isActive ? "24px" : "8px",
+                      backgroundColor: isActive ? colors.primary : "#D4D4D8" 
+                    }}
+                    aria-label={`Ir al slide ${idx + 1}`}
+                  />
+                );
+              })}
             </div>
           )}
         </section>
