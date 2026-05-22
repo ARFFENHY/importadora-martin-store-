@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { WhatsAppFloating } from "@/components/ui/WhatsAppFloating";
 import { ThemeInitializer } from "@/components/layout/ThemeInitializer";
 import { AdminNavWrapper } from "@/components/layout/AdminNavWrapper";
+import { FirestoreSync } from "@/components/layout/FirestoreSync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,6 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://importadora-martin-store.vercel.app'),
   title: "Importadora Martin Store | Catálogo Digital",
   description: "Encuentra los mejores productos industriales y herramientas en nuestro catálogo digital. Pedidos rápidos por WhatsApp.",
   openGraph: {
@@ -55,6 +57,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground custom-scrollbar">
         <ThemeInitializer />
+        <FirestoreSync />
         <AdminNavWrapper>
           {children}
         </AdminNavWrapper>
