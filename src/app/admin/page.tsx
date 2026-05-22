@@ -185,7 +185,7 @@ export default function AdminPage() {
     // Pequeña pausa dramática premium de 800ms
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const success = login(username, password);
+    const success = await login(username, password);
     setIsLoggingIn(false);
 
     if (!success) {

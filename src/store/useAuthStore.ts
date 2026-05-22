@@ -1,51 +1,76 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updateEmail,
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 interface AuthState {
   isAuthenticated: boolean;
   loginError: string | null;
-  adminUsername: string;
-  adminPassword: string;
-  login: (usernameInput: string, passwordInput: string) => boolean;
-  logout: () => void;
+  adminUsername: string;   // guardado solo para mostrar en UI
+  adminPassword: string;   // NO se usa para auth real — es Firebase Auth
+  login: (usernameInput: string, passwordInput: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   clearError: () => void;
   updateCredentials: (newUsername: string, newPassword: string) => void;
+  initAuthListener: () => () => void;
 }
 
-const DEFAULT_USER = 'admin';
-const DEFAULT_PASS = 'martin2026';
+// Email de admin en Firebase Auth (formato requerido por Firebase)
+const ADMIN_EMAIL = 'admin@importadora-martin.com';
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       isAuthenticated: false,
       loginError: null,
-      adminUsername: DEFAULT_USER,
-      adminPassword: DEFAULT_PASS,
+      adminUsername: 'admin',
+      adminPassword: '',
 
-      login: (usernameInput, passwordInput) => {
-        const { adminUsername, adminPassword } = get();
-        if (
-          usernameInput.trim().toLowerCase() === adminUsername.toLowerCase() &&
-          passwordInput === adminPassword
-        ) {
+      // Escucha cambios de sesión de Firebase (para persistir entre recargas)
+      initAuthListener: () => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          set({ isAuthenticated: !!user });
+        });
+        return unsubscribe;
+      },
+
+      login: async (usernameInput: string, passwordInput: string) => {
+        try {
+          // Firebase Auth usa email+password. El username es solo un alias visual.
+          await signInWithEmailAndPassword(auth, ADMIN_EMAIL, passwordInput);
           set({ isAuthenticated: true, loginError: null });
           return true;
-        } else {
+        } catch {
           set({ loginError: 'Usuario o contraseña incorrectos. Intente nuevamente.' });
           return false;
         }
       },
 
-      logout: () => set({ isAuthenticated: false, loginError: null }),
+      logout: async () => {
+        await firebaseSignOut(auth);
+        set({ isAuthenticated: false, loginError: null });
+      },
+
       clearError: () => set({ loginError: null }),
 
       updateCredentials: (newUsername: string, newPassword: string) => {
-        set({ adminUsername: newUsername.trim(), adminPassword: newPassword });
+        // Solo actualiza el nombre visual en UI (la contraseña real la maneja Firebase Auth)
+        set({ adminUsername: newUsername.trim() });
       },
     }),
     {
       name: 'admin-auth-storage',
+      partialize: (state) => ({
+        adminUsername: state.adminUsername,
+      }),
     }
   )
 );

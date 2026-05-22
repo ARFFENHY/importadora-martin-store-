@@ -66,7 +66,7 @@ export default function LandingPage() {
 
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    const success = login(username, password);
+    const success = await login(username, password);
     setIsLoggingIn(false);
 
     if (success) {
