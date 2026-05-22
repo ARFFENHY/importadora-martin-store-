@@ -43,8 +43,8 @@ interface ConfigState {
 }
 
 const DEFAULT_COLORS: ColorsConfig = {
-  primary: '#FFB800',
-  secondary: '#FF8A00',
+  primary: '#0F2C59',
+  secondary: '#3B82F6',
   background: '#FFFFFF',
   foreground: '#000000',
   surface: '#FFFFFF',

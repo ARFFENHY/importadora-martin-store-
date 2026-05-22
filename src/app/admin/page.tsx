@@ -138,6 +138,8 @@ const PRESET_IMAGES = [
   }
 ];
 
+const isValidHex = (hex: string) => /^#[0-9A-Fa-f]{6}$/.test(hex);
+
 export default function AdminPage() {
   const router = useRouter();
   
@@ -286,6 +288,20 @@ export default function AdminPage() {
 
   const handleColorChange = (key: keyof ColorsConfig, value: string) => {
     setLocalColors(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleHexInputChange = (key: keyof ColorsConfig, val: string) => {
+    let formatted = val;
+    if (formatted && !formatted.startsWith("#")) {
+      formatted = "#" + formatted;
+    }
+    if (formatted === "#") {
+      setLocalColors(prev => ({ ...prev, [key]: "#" }));
+      return;
+    }
+    if (formatted.length <= 7) {
+      setLocalColors(prev => ({ ...prev, [key]: formatted }));
+    }
   };
 
   const handleStoreChange = (key: string, value: string) => {
@@ -544,8 +560,8 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4 relative overflow-hidden font-sans select-none">
         {/* Luces de fondo difusas / Gradientes premium */}
-        <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-amber-500/10 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-amber-600/10 blur-[120px] pointer-events-none" />
+        <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
         
         {/* Botón flotante para volver al inicio */}
         <button 
@@ -562,19 +578,19 @@ export default function AdminPage() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className={`w-full max-w-md bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 rounded-[2.5rem] p-8 shadow-2xl relative z-10 ${shakeError ? "animate-[shake_0.5s_ease-in-out]" : ""}`}
         >
-          {/* Detalles dorados en los bordes */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+          {/* Detalles azules en los bordes */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[2px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
           
           <div className="flex flex-col items-center text-center mb-8">
-            {/* Logo o Icono de la marca */}
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 mb-4">
-              <Sliders size={32} className="text-black" />
+            {/* Logo o Icono de la mascota de la marca */}
+            <div className="h-16 w-16 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4 border border-white/10">
+              <img src="/icon.jpg" alt="Logo" className="w-full h-full object-cover" />
             </div>
             
             <h2 className="text-2xl font-black text-white uppercase tracking-tight">
               {store.name || "Importadora Martin"}
             </h2>
-            <p className="text-[10px] text-amber-500 font-bold uppercase tracking-[0.2em] mt-1">
+            <p className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em] mt-1">
               Acceso Administrativo
             </p>
           </div>
@@ -603,7 +619,7 @@ export default function AdminPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   placeholder="admin"
-                  className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-xl py-3 pl-10 pr-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all font-mono"
+                  className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-blue-500/50 rounded-xl py-3 pl-10 pr-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
                 />
               </div>
             </div>
@@ -620,7 +636,7 @@ export default function AdminPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••••••"
-                  className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-amber-500/50 rounded-xl py-3 pl-10 pr-10 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all font-mono"
+                  className="w-full bg-zinc-950/50 border border-zinc-800 focus:border-blue-500/50 rounded-xl py-3 pl-10 pr-10 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
                 />
                 <button
                   type="button"
@@ -635,7 +651,7 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full mt-2 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 disabled:from-zinc-800 disabled:to-zinc-800 text-black disabled:text-zinc-600 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2 hover:brightness-110 active:brightness-95 cursor-pointer"
+              className="w-full mt-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 disabled:from-zinc-800 disabled:to-zinc-800 text-white disabled:text-zinc-600 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-blue-500/10 flex items-center justify-center gap-2 hover:brightness-110 active:brightness-95 cursor-pointer"
             >
               {isLoggingIn ? (
                 <>
@@ -654,7 +670,7 @@ export default function AdminPage() {
           <div className="text-center mt-8">
             <button 
               onClick={() => router.push("/")}
-              className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-amber-500 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+              className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-blue-400 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
             >
               <ChevronLeft size={12} />
               Volver al Catálogo
@@ -690,7 +706,7 @@ export default function AdminPage() {
           </button>
           <div>
             <h1 className="text-xl font-black text-black uppercase tracking-tight flex items-center gap-2">
-              <Sliders size={20} className="text-amber-500" />
+              <Sliders size={20} className="text-blue-500" />
               {store.name}
             </h1>
             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Panel Administrativo Central</p>
@@ -713,7 +729,7 @@ export default function AdminPage() {
             <motion.span 
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-amber-200"
+              className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-blue-200"
             >
               <RefreshCw className="animate-spin" size={14} />
               Restablecido
@@ -803,7 +819,7 @@ export default function AdminPage() {
               activeTab === "designer" ? "bg-black text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50"
             }`}
           >
-            <Sparkles size={16} className="text-amber-500" />
+            <Sparkles size={16} className="text-blue-500" />
             Diseñador
           </button>
           <button
@@ -943,7 +959,7 @@ export default function AdminPage() {
                 {/* QR / Sharing Quick Card */}
                 <div className="lg:col-span-5 bg-white border border-zinc-200 rounded-[2.5rem] p-8 shadow-sm flex flex-col items-center justify-between text-center min-h-[480px]">
                   <div className="space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">Compartir Catálogo</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Compartir Catálogo</span>
                     <h3 className="text-xl font-black uppercase tracking-tight">Tu Tienda Digital</h3>
                     <p className="text-xs text-zinc-500 max-w-[280px]">Los usuarios pueden ver tus ofertas y enviarte pedidos directamente a tu WhatsApp.</p>
                   </div>
@@ -1455,79 +1471,151 @@ export default function AdminPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Color Primario</label>
-                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5">
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.primary) ? localColors.primary : "#cccccc" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.primary) ? localColors.primary : "#0f2c59"} 
+                            onChange={(e) => handleColorChange("primary", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
                         <input 
-                          type="color" 
-                          value={localColors.primary} 
-                          onChange={(e) => handleColorChange("primary", e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
+                          type="text"
+                          value={localColors.primary}
+                          onChange={(e) => handleHexInputChange("primary", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#0F2C59"
                         />
-                        <span className="text-xs font-mono font-bold">{localColors.primary.toUpperCase()}</span>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Color Secundario</label>
-                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5">
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.secondary) ? localColors.secondary : "#cccccc" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.secondary) ? localColors.secondary : "#3b82f6"} 
+                            onChange={(e) => handleColorChange("secondary", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
                         <input 
-                          type="color" 
-                          value={localColors.secondary} 
-                          onChange={(e) => handleColorChange("secondary", e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
+                          type="text"
+                          value={localColors.secondary}
+                          onChange={(e) => handleHexInputChange("secondary", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#3B82F6"
                         />
-                        <span className="text-xs font-mono font-bold">{localColors.secondary.toUpperCase()}</span>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Fondo General</label>
-                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5">
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.background) ? localColors.background : "#cccccc" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.background) ? localColors.background : "#ffffff"} 
+                            onChange={(e) => handleColorChange("background", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
                         <input 
-                          type="color" 
-                          value={localColors.background} 
-                          onChange={(e) => handleColorChange("background", e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
+                          type="text"
+                          value={localColors.background}
+                          onChange={(e) => handleHexInputChange("background", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#FFFFFF"
                         />
-                        <span className="text-xs font-mono font-bold">{localColors.background.toUpperCase()}</span>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Texto Principal</label>
-                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5">
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.foreground) ? localColors.foreground : "#cccccc" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.foreground) ? localColors.foreground : "#000000"} 
+                            onChange={(e) => handleColorChange("foreground", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
                         <input 
-                          type="color" 
-                          value={localColors.foreground} 
-                          onChange={(e) => handleColorChange("foreground", e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
+                          type="text"
+                          value={localColors.foreground}
+                          onChange={(e) => handleHexInputChange("foreground", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#000000"
                         />
-                        <span className="text-xs font-mono font-bold">{localColors.foreground.toUpperCase()}</span>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Superficie (Cajas)</label>
-                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5">
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.surface) ? localColors.surface : "#cccccc" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.surface) ? localColors.surface : "#ffffff"} 
+                            onChange={(e) => handleColorChange("surface", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
                         <input 
-                          type="color" 
-                          value={localColors.surface} 
-                          onChange={(e) => handleColorChange("surface", e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
+                          type="text"
+                          value={localColors.surface}
+                          onChange={(e) => handleHexInputChange("surface", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#FFFFFF"
                         />
-                        <span className="text-xs font-mono font-bold">{localColors.surface.toUpperCase()}</span>
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Líneas y Bordes</label>
-                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2.5">
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.border) ? localColors.border : "#cccccc" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.border) ? localColors.border : "#e5e5e5"} 
+                            onChange={(e) => handleColorChange("border", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
                         <input 
-                          type="color" 
-                          value={localColors.border} 
-                          onChange={(e) => handleColorChange("border", e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
+                          type="text"
+                          value={localColors.border}
+                          onChange={(e) => handleHexInputChange("border", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#E5E5E5"
                         />
-                        <span className="text-xs font-mono font-bold">{localColors.border.toUpperCase()}</span>
                       </div>
                     </div>
                   </div>
@@ -1894,7 +1982,7 @@ export default function AdminPage() {
             >
               <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-10 shadow-sm flex flex-col md:flex-row items-center gap-10">
                 <div className="flex-1 space-y-6">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">Campañas de Marketing</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Campañas de Marketing</span>
                   <h3 className="text-3xl font-black uppercase tracking-tight text-black leading-none">Comparte tu Catálogo con el Mundo</h3>
                   <p className="text-sm text-zinc-500 leading-relaxed">
                     Hemos diseñado una tarjeta de presentación corporativa y un código QR dinámico de alta definición para que puedas imprimirlos, colocarlos en tu local, o compartirlos por redes sociales de forma instantánea.
@@ -1937,7 +2025,7 @@ export default function AdminPage() {
 
                 <div className="w-full md:w-80 bg-zinc-900 rounded-[2rem] p-8 border border-zinc-800 text-white flex flex-col items-center justify-between text-center relative overflow-hidden shadow-xl shadow-zinc-900/10 min-h-[400px]">
                   {/* Background Glow */}
-                  <div className="absolute top-[-50%] right-[-50%] w-[100%] h-[100%] bg-amber-500/10 blur-[100px] rounded-full pointer-events-none" />
+                  <div className="absolute top-[-50%] right-[-50%] w-[100%] h-[100%] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
                   
                   <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 relative z-10">Código QR Oficial</h4>
 
@@ -1954,14 +2042,14 @@ export default function AdminPage() {
 
                   <div className="relative z-10 w-full space-y-4">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-amber-500">{store.name}</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text-blue-400">{store.name}</p>
                       <p className="text-[10px] text-zinc-400 mt-1">Escanea para explorar el catálogo móvil</p>
                     </div>
 
                     <div className="flex gap-2">
                       <button 
                         onClick={handleShareQR}
-                        className="flex-1 bg-amber-500 hover:bg-amber-600 text-black py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/10"
+                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/10"
                       >
                         <Share2 size={12} />
                         Compartir QR
@@ -2265,12 +2353,12 @@ export default function AdminPage() {
             >
               {/* Current credentials info */}
               <div className="bg-white border border-zinc-200 rounded-[2rem] p-6 shadow-sm flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shrink-0">
+                <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
                   <ShieldCheck size={24} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Credenciales Activas</p>
-                  <p className="text-sm font-black text-zinc-900 mt-0.5">Usuario: <span className="font-mono text-amber-600">{adminUsername}</span></p>
+                  <p className="text-sm font-black text-zinc-900 mt-0.5">Usuario: <span className="font-mono text-blue-600">{adminUsername}</span></p>
                   <p className="text-[10px] text-zinc-500 mt-0.5">Contraseña: <span className="font-mono tracking-widest">••••••••</span></p>
                 </div>
               </div>
@@ -2279,7 +2367,7 @@ export default function AdminPage() {
               <div className="bg-white border border-zinc-200 rounded-[2rem] p-8 shadow-sm">
                 <div className="mb-6">
                   <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900 flex items-center gap-2">
-                    <KeyRound size={18} className="text-amber-500" />
+                    <KeyRound size={18} className="text-blue-500" />
                     Cambiar Credenciales
                   </h3>
                   <p className="text-xs text-zinc-500 mt-1">Actualizá el usuario y/o la contraseña de acceso al panel administrativo.</p>
@@ -2327,7 +2415,7 @@ export default function AdminPage() {
                         value={secNewUsername}
                         onChange={(e) => setSecNewUsername(e.target.value)}
                         placeholder={adminUsername}
-                        className="w-full bg-zinc-50 border border-zinc-200 focus:border-amber-400 rounded-xl py-3 pl-10 pr-4 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-400/40 transition-all font-mono"
+                        className="w-full bg-zinc-50 border border-zinc-200 focus:border-blue-400 rounded-xl py-3 pl-10 pr-4 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all font-mono"
                       />
                     </div>
                   </div>
@@ -2348,7 +2436,7 @@ export default function AdminPage() {
                           onChange={(e) => setSecCurrentPass(e.target.value)}
                           required
                           placeholder="Contraseña actual"
-                          className="w-full bg-zinc-50 border border-zinc-200 focus:border-amber-400 rounded-xl py-3 pl-10 pr-10 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-400/40 transition-all font-mono"
+                          className="w-full bg-zinc-50 border border-zinc-200 focus:border-blue-400 rounded-xl py-3 pl-10 pr-10 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all font-mono"
                         />
                         <button
                           type="button"
@@ -2374,7 +2462,7 @@ export default function AdminPage() {
                           required
                           minLength={6}
                           placeholder="Mínimo 6 caracteres"
-                          className="w-full bg-zinc-50 border border-zinc-200 focus:border-amber-400 rounded-xl py-3 pl-10 pr-10 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-400/40 transition-all font-mono"
+                          className="w-full bg-zinc-50 border border-zinc-200 focus:border-blue-400 rounded-xl py-3 pl-10 pr-10 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all font-mono"
                         />
                         <button
                           type="button"
@@ -2402,7 +2490,7 @@ export default function AdminPage() {
                           onChange={(e) => setSecConfirmPass(e.target.value)}
                           required
                           placeholder="Repetir nueva contraseña"
-                          className={`w-full bg-zinc-50 border focus:border-amber-400 rounded-xl py-3 pl-10 pr-10 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-400/40 transition-all font-mono ${
+                          className={`w-full bg-zinc-50 border focus:border-blue-400 rounded-xl py-3 pl-10 pr-10 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-400/40 transition-all font-mono ${
                             secConfirmPass.length > 0 && secConfirmPass !== secNewPass
                               ? "border-red-300 bg-red-50"
                               : "border-zinc-200"
@@ -2424,7 +2512,7 @@ export default function AdminPage() {
 
                   <button
                     type="submit"
-                    className="w-full mt-2 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-md shadow-amber-500/10 flex items-center justify-center gap-2 hover:brightness-110 cursor-pointer"
+                    className="w-full mt-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 hover:brightness-110 cursor-pointer"
                   >
                     <ShieldCheck size={15} />
                     Guardar Nuevas Credenciales

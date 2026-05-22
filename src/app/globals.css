@@ -14,14 +14,14 @@
   --radius-2xl: 1.5rem;
   
   --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 20px rgba(255, 184, 0, 0.15);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
 }
 
 :root {
   --background: #FFFFFF;
   --foreground: #000000;
-  --primary: #FFB800;
-  --secondary: #FF8A00;
+  --primary: #0F2C59;
+  --secondary: #3B82F6;
   --surface: #FFFFFF;
   --surface-hover: #F8F8F8;
   --muted: #52525B;
@@ -91,6 +91,6 @@ body {
   width: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 184, 0, 0.15);
+  background: rgba(59, 130, 246, 0.15);
   border-radius: 10px;
 }

@@ -80,7 +80,7 @@ export default function ProductPage() {
       {/* Product Info */}
       <div className="relative -mt-8 rounded-t-[2.5rem] bg-white p-8 shadow-[0_-20px_60px_rgba(0,0,0,0.05)] border-t border-border">
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-secondary">
             {product.category}
           </span>
           <h1 className="text-2xl font-bold text-foreground md:text-3xl">

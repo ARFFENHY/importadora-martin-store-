@@ -111,7 +111,7 @@ export function CartDrawer() {
                         </div>
                         
                         <div className="mt-2 flex items-center justify-between">
-                          <span className="text-base font-black text-amber-600">
+                          <span className="text-base font-black text-primary">
                             {formatPrice(item.price)}
                           </span>
                           

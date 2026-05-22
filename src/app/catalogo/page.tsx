@@ -67,8 +67,8 @@ export default function CatalogoPage() {
                     <img src={store.logoUrl} alt="Logo" className="h-full w-full object-cover" />
                   </div>
                 ) : (
-                  <div className="h-6 w-6 rounded-full bg-primary/25 border border-primary flex items-center justify-center text-primary text-[10px] font-black shrink-0">
-                    {store.name.charAt(0).toUpperCase()}
+                  <div className="h-6 w-6 rounded-full overflow-hidden border border-primary bg-white flex items-center justify-center shrink-0">
+                    <img src="/icon.jpg" alt="Logo" className="h-full w-full object-cover" />
                   </div>
                 )}
                 <span className="text-xs font-bold uppercase tracking-widest">

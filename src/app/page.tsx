@@ -85,13 +85,13 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden relative flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-[#030A1C] via-[#081229] to-[#010510] text-white overflow-hidden relative flex flex-col">
 
       {/* ── Luces de fondo difusas ── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-amber-500/8 blur-[140px]" />
-        <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-amber-600/6 blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-amber-500/3 blur-[180px]" />
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-blue-600/10 blur-[140px]" />
+        <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full bg-indigo-500/8 blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-cyan-500/4 blur-[180px]" />
       </div>
 
       {/* ── Grid overlay sutil ── */}
@@ -99,7 +99,7 @@ export default function LandingPage() {
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,184,0,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,184,0,0.3) 1px, transparent 1px)",
+            "linear-gradient(rgba(59,130,246,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.15) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
@@ -112,8 +112,8 @@ export default function LandingPage() {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3"
         >
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-            <Flame size={18} className="text-black" fill="currentColor" />
+          <div className="h-9 w-9 rounded-full overflow-hidden border border-blue-500/30 bg-white flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <img src="/icon.jpg" alt="Logo" className="h-full w-full object-cover" />
           </div>
           <span className="text-sm font-black uppercase tracking-widest text-white">
             {storeName}
@@ -125,7 +125,7 @@ export default function LandingPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
           onClick={handleOpenLogin}
-          className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50 transition-all cursor-pointer"
+          className="flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-bold text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/50 transition-all cursor-pointer"
         >
           <Lock size={13} />
           Ingresar como Admin
@@ -140,22 +140,28 @@ export default function LandingPage() {
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="flex flex-col items-center gap-6 max-w-2xl"
         >
-          {/* Badge */}
+          {/* Mascot / Logo de la Empresa (Predominante al abrir) */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-amber-400"
+            transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+            className="relative w-36 h-36 md:w-44 md:h-44 rounded-full p-1.5 bg-gradient-to-br from-blue-500 via-indigo-600 to-cyan-400 shadow-[0_0_60px_rgba(59,130,246,0.35)] border border-white/10 flex items-center justify-center overflow-hidden group mb-4 animate-[pulse-ring_3s_infinite_alternate]"
           >
-            <Flame size={11} fill="currentColor" />
-            Importadora de Herramientas
+            <div className="absolute inset-0 bg-black/30 rounded-full backdrop-blur-sm z-0" />
+            <img
+              src="/icon.jpg"
+              alt="Logo Mascota"
+              className="relative z-10 w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
+            />
+            {/* Glowing ring effects */}
+            <div className="absolute inset-0 rounded-full border border-cyan-400/30 animate-pulse pointer-events-none z-20" />
           </motion.div>
 
           {/* Título */}
           <h1 className="text-5xl md:text-7xl font-black leading-none tracking-tight">
             <span className="text-white">{storeName.split(" ")[0]}</span>{" "}
             <br className="hidden md:block" />
-            <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-500 bg-clip-text text-transparent">
               {storeName.split(" ").slice(1).join(" ")}
             </span>
           </h1>
@@ -172,7 +178,7 @@ export default function LandingPage() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => router.push("/catalogo")}
-              className="group w-full sm:w-auto flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-8 py-4 text-sm font-black uppercase tracking-widest text-black shadow-xl shadow-amber-500/20 hover:from-amber-300 hover:to-amber-400 transition-all cursor-pointer"
+              className="group w-full sm:w-auto flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-blue-500/25 hover:from-blue-400 hover:to-indigo-500 transition-all cursor-pointer"
             >
               Ver Catálogo
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -184,7 +190,7 @@ export default function LandingPage() {
               onClick={handleOpenLogin}
               className="group w-full sm:w-auto flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-8 py-4 text-sm font-black uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all cursor-pointer"
             >
-              <ShieldCheck size={16} className="text-amber-400" />
+              <ShieldCheck size={16} className="text-blue-400" />
               Panel Admin
             </motion.button>
           </div>
@@ -203,10 +209,10 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + i * 0.1 }}
-              className="flex flex-col items-center gap-3 rounded-2xl border border-white/5 bg-white/3 p-5 text-center hover:border-amber-500/20 hover:bg-amber-500/5 transition-all"
+              className="flex flex-col items-center gap-3 rounded-2xl border border-white/5 bg-white/3 p-5 text-center hover:border-blue-500/20 hover:bg-blue-500/5 transition-all"
             >
-              <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <Icon size={20} className="text-amber-400" />
+              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                <Icon size={20} className="text-blue-400" />
               </div>
               <p className="text-xs font-black uppercase tracking-wider text-white">{label}</p>
               <p className="text-[10px] text-zinc-500 leading-relaxed">{desc}</p>
@@ -241,8 +247,8 @@ export default function LandingPage() {
               shakeError ? "animate-[shake_0.5s_ease-in-out]" : ""
             }`}
           >
-            {/* Línea dorada superior */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent rounded-full" />
+            {/* Línea azul superior */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-[2px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent rounded-full" />
 
             {/* Botón cerrar */}
             <button
@@ -254,13 +260,13 @@ export default function LandingPage() {
 
             {/* Icono y título */}
             <div className="flex flex-col items-center text-center mb-7">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/25 mb-4">
-                <ShieldCheck size={28} className="text-black" />
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25 mb-4">
+                <ShieldCheck size={28} className="text-white" />
               </div>
               <h2 className="text-xl font-black text-white uppercase tracking-tight">
                 Acceso Administrativo
               </h2>
-              <p className="text-[10px] text-amber-500 font-bold uppercase tracking-[0.2em] mt-1">
+              <p className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em] mt-1">
                 {storeName}
               </p>
             </div>
@@ -294,7 +300,7 @@ export default function LandingPage() {
                     required
                     autoFocus
                     placeholder="admin"
-                    className="w-full bg-zinc-950/60 border border-zinc-800 focus:border-amber-500/60 rounded-xl py-3 pl-10 pr-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-all font-mono"
+                    className="w-full bg-zinc-950/60 border border-zinc-800 focus:border-blue-500/60 rounded-xl py-3 pl-10 pr-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all font-mono"
                   />
                 </div>
               </div>
@@ -314,7 +320,7 @@ export default function LandingPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••••••••"
-                    className="w-full bg-zinc-950/60 border border-zinc-800 focus:border-amber-500/60 rounded-xl py-3 pl-10 pr-10 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-all font-mono"
+                    className="w-full bg-zinc-950/60 border border-zinc-800 focus:border-blue-500/60 rounded-xl py-3 pl-10 pr-10 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all font-mono"
                   />
                   <button
                     type="button"
@@ -330,7 +336,7 @@ export default function LandingPage() {
               <button
                 type="submit"
                 disabled={isLoggingIn}
-                className="w-full mt-2 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 disabled:from-zinc-800 disabled:to-zinc-800 text-black disabled:text-zinc-600 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-amber-500/15 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 disabled:from-zinc-800 disabled:to-zinc-800 text-white disabled:text-zinc-600 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-blue-500/15 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isLoggingIn ? (
                   <>
@@ -350,7 +356,7 @@ export default function LandingPage() {
             <div className="text-center mt-6">
               <button
                 onClick={() => { handleCloseLogin(); router.push("/catalogo"); }}
-                className="text-[10px] font-bold text-zinc-500 hover:text-amber-400 uppercase tracking-widest transition-colors cursor-pointer"
+                className="text-[10px] font-bold text-zinc-500 hover:text-blue-400 uppercase tracking-widest transition-colors cursor-pointer"
               >
                 Ver catálogo sin iniciar sesión →
               </button>
@@ -359,12 +365,16 @@ export default function LandingPage() {
         </motion.div>
       )}
 
-      {/* Keyframe para shake */}
+      {/* Keyframes de animación */}
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
           20%, 40%, 60%, 80% { transform: translateX(6px); }
+        }
+        @keyframes pulse-ring {
+          0% { transform: scale(1); box-shadow: 0 0 40px rgba(59, 130, 246, 0.2); }
+          100% { transform: scale(1.03); box-shadow: 0 0 70px rgba(59, 130, 246, 0.55); }
         }
       `}</style>
     </div>
