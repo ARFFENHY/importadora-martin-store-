@@ -6,6 +6,7 @@ import { CartDrawer } from "@/components/features/cart/CartDrawer";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { WhatsAppFloating } from "@/components/ui/WhatsAppFloating";
 import { ThemeInitializer } from "@/components/layout/ThemeInitializer";
+import { AdminNavWrapper } from "@/components/layout/AdminNavWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,9 +55,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground custom-scrollbar">
         <ThemeInitializer />
-        <main className="flex-1 pb-20 md:pb-0">
+        <AdminNavWrapper>
           {children}
-        </main>
+        </AdminNavWrapper>
         <CartDrawer />
         <BottomNav />
         <WhatsAppFloating />

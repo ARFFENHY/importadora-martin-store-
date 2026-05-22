@@ -7,6 +7,7 @@ import { Home, Search, ShoppingBag, User, LayoutGrid } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const navItems = [
   { icon: Home, label: "Inicio", href: "/" },
@@ -15,10 +16,15 @@ const navItems = [
   { icon: ShoppingBag, label: "Carrito", href: "/cart", showBadge: true },
   { icon: User, label: "Perfil", href: "/perfil" },
 ];
+
 export function BottomNav() {
   const pathname = usePathname();
   const { getItemCount } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
   const itemCount = getItemCount();
+
+  // Solo visible para el administrador autenticado
+  if (!isAuthenticated) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
