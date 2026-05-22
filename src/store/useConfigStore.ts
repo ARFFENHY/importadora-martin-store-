@@ -10,6 +10,9 @@ export interface ColorsConfig {
   surfaceHover: string;
   border: string;
   muted: string;
+  badgeNew?: string;
+  badgeFeatured?: string;
+  badgeStock?: string;
 }
 
 export interface StoreConfig {
@@ -51,6 +54,9 @@ const DEFAULT_COLORS: ColorsConfig = {
   surfaceHover: '#F8F8F8',
   border: '#E5E5E5',
   muted: '#52525B',
+  badgeNew: '#F59E0B',
+  badgeFeatured: '#18181B',
+  badgeStock: '#71717A',
 };
 
 const DEFAULT_STORE: StoreConfig = {

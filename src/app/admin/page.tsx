@@ -141,6 +141,20 @@ const PRESET_IMAGES = [
 
 const isValidHex = (hex: string) => /^#[0-9A-Fa-f]{6}$/.test(hex);
 
+function getContrastColor(hex: string | undefined) {
+  if (!hex || hex.length < 6) return "#FFFFFF";
+  const cleanHex = hex.replace("#", "");
+  if (cleanHex.length !== 6 && cleanHex.length !== 3) return "#FFFFFF";
+  const expandedHex = cleanHex.length === 3 
+    ? cleanHex.split("").map(c => c + c).join("") 
+    : cleanHex;
+  const r = parseInt(expandedHex.substring(0, 2), 16);
+  const g = parseInt(expandedHex.substring(2, 4), 16);
+  const b = parseInt(expandedHex.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "#000000" : "#FFFFFF";
+}
+
 export default function AdminPage() {
   const router = useRouter();
   
@@ -148,6 +162,10 @@ export default function AdminPage() {
   const { colors, store, banner, bannerPresets, updateColors, updateStoreConfig, updateHeroBanner, updateBannerPreset, resetToDefault } = useConfigStore();
   const { products, categories, addProduct, updateProduct, deleteProduct, addCategory, deleteCategory, resetProductsToDefault } = useProductStore();
   const { orders, updateOrderStatus, deleteOrder, clearOrders } = useOrderStore();
+
+  const bgNew = colors.badgeNew || "#F59E0B";
+  const bgFeatured = colors.badgeFeatured || "#18181B";
+  const bgStock = colors.badgeStock || "#71717A";
 
   // Authentication states
   const { isAuthenticated, login, logout, loginError, clearError, adminUsername, updateCredentials } = useAuthStore();
@@ -209,7 +227,7 @@ export default function AdminPage() {
     price: "",
     originalPrice: "",
     category: "",
-    imageUrl: "",
+    images: [] as string[],
     isNew: false,
     isFeatured: false,
     stock: ""
@@ -332,7 +350,9 @@ export default function AdminPage() {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
-      updateProduct(productId, { images: [base64] });
+      const targetProd = products.find(p => p.id === productId);
+      const remainingImages = targetProd && targetProd.images ? targetProd.images.slice(1) : [];
+      updateProduct(productId, { images: [base64, ...remainingImages] });
       setProductToast("Imagen del producto actualizada con éxito");
       setTimeout(() => setProductToast(null), 3000);
     };
@@ -369,7 +389,7 @@ export default function AdminPage() {
       price: "",
       originalPrice: "",
       category: categories[0]?.name || "Otros",
-      imageUrl: "",
+      images: [],
       isNew: false,
       isFeatured: false,
       stock: ""
@@ -385,7 +405,7 @@ export default function AdminPage() {
       price: product.price.toString(),
       originalPrice: product.originalPrice ? product.originalPrice.toString() : "",
       category: product.category,
-      imageUrl: product.images[0] || "",
+      images: product.images || [],
       isNew: !!product.isNew,
       isFeatured: !!product.isFeatured,
       stock: product.stock !== undefined ? product.stock.toString() : ""
@@ -412,7 +432,7 @@ export default function AdminPage() {
       originalPrice: origPriceNum,
       discount: discount,
       category: productForm.category,
-      images: productForm.imageUrl ? [productForm.imageUrl] : [],
+      images: productForm.images.length > 0 ? productForm.images : ['https://images.unsplash.com/photo-1530124560647-55e12e3f8961?q=80&w=600'],
       isNew: productForm.isNew,
       isFeatured: productForm.isFeatured,
       stock: productForm.stock.trim() !== "" ? parseInt(productForm.stock) : undefined
@@ -1225,19 +1245,39 @@ export default function AdminPage() {
                       {/* Info triggers */}
                       <div className="flex gap-2 flex-wrap">
                         {product.isFeatured && (
-                          <span className="text-[8px] font-black uppercase tracking-wider bg-zinc-900 text-white px-2 py-0.5 rounded-md">Destacado</span>
+                          <span 
+                            style={{ backgroundColor: bgFeatured, color: getContrastColor(bgFeatured) }}
+                            className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md"
+                          >
+                            Destacado
+                          </span>
                         )}
                         {product.isNew && (
-                          <span className="text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white px-2 py-0.5 rounded-md">Nuevo</span>
+                          <span 
+                            style={{ backgroundColor: bgNew, color: getContrastColor(bgNew) }}
+                            className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md"
+                          >
+                            Nuevo
+                          </span>
                         )}
                         {product.stock !== undefined ? (
                           product.stock === 0 ? (
                             <span className="text-[8px] font-black uppercase tracking-wider bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 rounded-md">Sin Stock</span>
                           ) : (
-                            <span className="text-[8px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-md">Stock: {product.stock}</span>
+                            <span 
+                              style={{ backgroundColor: bgStock, color: getContrastColor(bgStock) }}
+                              className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md"
+                            >
+                              Stock: {product.stock}
+                            </span>
                           )
                         ) : (
-                          <span className="text-[8px] font-black uppercase tracking-wider bg-zinc-50 text-zinc-500 border border-zinc-200 px-2 py-0.5 rounded-md">Stock: Ilimitado</span>
+                          <span 
+                            style={{ backgroundColor: bgStock, color: getContrastColor(bgStock) }}
+                            className="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md"
+                          >
+                            Stock: Ilimitado
+                          </span>
                         )}
                       </div>
 
@@ -1644,6 +1684,127 @@ export default function AdminPage() {
                           className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
                           maxLength={7}
                           placeholder="#E5E5E5"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Section: Colores de Etiquetas de Productos */}
+                <section className="bg-white rounded-3xl p-6 border border-zinc-200 shadow-sm space-y-4">
+                  <div className="flex items-center gap-2 mb-1 text-black font-black uppercase tracking-tight">
+                    <span className="text-amber-500 text-lg">🏷️</span>
+                    <h3>Colores de Etiquetas de Productos</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Badge Nuevo */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta "Nuevo"</label>
+                        <span 
+                          style={{ 
+                            backgroundColor: isValidHex(localColors.badgeNew || "") ? localColors.badgeNew : "#F59E0B",
+                            color: getContrastColor(localColors.badgeNew || "#F59E0B")
+                          }}
+                          className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-2xs"
+                        >
+                          Nuevo
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.badgeNew || "") ? localColors.badgeNew : "#F59E0B" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.badgeNew || "") ? localColors.badgeNew : "#f59e0b"} 
+                            onChange={(e) => handleColorChange("badgeNew", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
+                        <input 
+                          type="text"
+                          value={localColors.badgeNew || ""}
+                          onChange={(e) => handleHexInputChange("badgeNew", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#F59E0B"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Badge Destacado */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta "Destacado"</label>
+                        <span 
+                          style={{ 
+                            backgroundColor: isValidHex(localColors.badgeFeatured || "") ? localColors.badgeFeatured : "#18181B",
+                            color: getContrastColor(localColors.badgeFeatured || "#18181B")
+                          }}
+                          className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-2xs"
+                        >
+                          Destacado
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.badgeFeatured || "") ? localColors.badgeFeatured : "#18181B" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.badgeFeatured || "") ? localColors.badgeFeatured : "#18181b"} 
+                            onChange={(e) => handleColorChange("badgeFeatured", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
+                        <input 
+                          type="text"
+                          value={localColors.badgeFeatured || ""}
+                          onChange={(e) => handleHexInputChange("badgeFeatured", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#18181B"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Badge Stock */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta "Stock"</label>
+                        <span 
+                          style={{ 
+                            backgroundColor: isValidHex(localColors.badgeStock || "") ? localColors.badgeStock : "#71717A",
+                            color: getContrastColor(localColors.badgeStock || "#71717A")
+                          }}
+                          className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-2xs"
+                        >
+                          Stock: 5
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-xl p-2">
+                        <div 
+                          className="relative w-8 h-8 rounded-lg border border-zinc-200 shadow-2xs overflow-hidden shrink-0" 
+                          style={{ backgroundColor: isValidHex(localColors.badgeStock || "") ? localColors.badgeStock : "#71717A" }}
+                        >
+                          <input 
+                            type="color" 
+                            value={isValidHex(localColors.badgeStock || "") ? localColors.badgeStock : "#71717a"} 
+                            onChange={(e) => handleColorChange("badgeStock", e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer scale-150"
+                          />
+                        </div>
+                        <input 
+                          type="text"
+                          value={localColors.badgeStock || ""}
+                          onChange={(e) => handleHexInputChange("badgeStock", e.target.value)}
+                          className="w-full bg-transparent text-xs font-mono font-bold text-zinc-800 outline-none uppercase focus:text-black"
+                          maxLength={7}
+                          placeholder="#71717A"
                         />
                       </div>
                     </div>
@@ -2253,78 +2414,116 @@ export default function AdminPage() {
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Foto del Producto</label>
-                    
-                    {productForm.imageUrl ? (
-                      // Preview state with options to change or delete
-                      <div className="relative aspect-video max-h-48 rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 flex items-center justify-center group/preview">
-                        <Image 
-                          src={productForm.imageUrl} 
-                          alt="Vista previa del producto"
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                          <label className="bg-white text-black px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-md cursor-pointer hover:bg-zinc-50 active:scale-95 transition-all flex items-center gap-1.5 border border-zinc-200">
-                            <Upload size={13} strokeWidth={2.5} />
-                            Cambiar Foto
-                            <input 
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between items-center ml-1">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Fotos del Producto ({productForm.images.length}/5)</label>
+                      <span className="text-[9px] font-bold text-zinc-400 uppercase">La primera foto será la Portada</span>
+                    </div>
+
+                    {/* Image slots grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {productForm.images.map((img, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-zinc-200 bg-zinc-50 flex items-center justify-center group/imgslot shadow-2xs">
+                          <Image 
+                            src={img} 
+                            alt={`Foto ${idx + 1}`}
+                            fill
+                            className="object-contain p-2"
+                            unoptimized
+                          />
+                          
+                          {/* Top corner Index badge */}
+                          <div className="absolute top-2 left-2 bg-black/65 backdrop-blur-xs text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider select-none z-10 flex items-center gap-1">
+                            {idx === 0 ? (
+                              <span className="text-amber-400">★ Portada</span>
+                            ) : (
+                              <span>Foto {idx + 1}</span>
+                            )}
+                          </div>
+
+                          {/* Hover action overlay */}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/imgslot:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2 z-10">
+                            {idx > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  // Set as primary (move to index 0)
+                                  setProductForm(prev => {
+                                    const nextImages = [...prev.images];
+                                    const [target] = nextImages.splice(idx, 1);
+                                    return {
+                                      ...prev,
+                                      images: [target, ...nextImages]
+                                    };
+                                  });
+                                }}
+                                className="w-full max-w-[110px] bg-white text-zinc-950 text-[8px] font-black uppercase tracking-wider py-1.5 rounded-lg hover:bg-zinc-100 active:scale-95 transition-all text-center flex items-center justify-center gap-1"
+                              >
+                                Principal
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                // Delete photo
+                                setProductForm(prev => ({
+                                  ...prev,
+                                  images: prev.images.filter((_, i) => i !== idx)
+                                }));
+                              }}
+                              className="w-full max-w-[110px] bg-red-600 text-white text-[8px] font-black uppercase tracking-wider py-1.5 rounded-lg hover:bg-red-700 active:scale-95 transition-all text-center flex items-center justify-center gap-1"
+                            >
+                              <Trash2 size={10} />
+                              Eliminar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Dropzone upload button slot if < 5 */}
+                      {productForm.images.length < 5 && (
+                        <label className="flex flex-col items-center justify-center w-full aspect-square border-2 border-dashed border-zinc-300 hover:border-black bg-zinc-50 hover:bg-zinc-100/30 rounded-2xl cursor-pointer transition-all duration-300 p-4 text-center group">
+                          <div className="flex flex-col items-center justify-center space-y-1.5">
+                            <div className="p-2.5 bg-zinc-100 rounded-full text-zinc-400 group-hover:text-black group-hover:bg-white shadow-xs transition-all duration-300">
+                              <Upload size={16} strokeWidth={2.5} />
+                            </div>
+                            <div>
+                              <p className="text-[8px] font-black uppercase text-zinc-700 tracking-wider">Subir Foto</p>
+                              <p className="text-[7px] text-zinc-400 mt-0.5 uppercase tracking-wide">Hasta 5 máx.</p>
+                            </div>
+                          </div>
+                          <input 
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                              const files = e.target.files;
+                              if (files) {
+                                const newImages = [...productForm.images];
+                                const remainingSlots = 5 - newImages.length;
+                                const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+                                filesToProcess.forEach((file) => {
                                   const reader = new FileReader();
                                   reader.onloadend = () => {
-                                    setProductForm(prev => ({ ...prev, imageUrl: reader.result as string }));
+                                    const base64 = reader.result as string;
+                                    setProductForm(prev => {
+                                      if (prev.images.length >= 5) return prev;
+                                      return {
+                                        ...prev,
+                                        images: [...prev.images, base64]
+                                      };
+                                    });
                                   };
                                   reader.readAsDataURL(file);
-                                }
-                              }}
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => setProductForm(prev => ({ ...prev, imageUrl: "" }))}
-                            className="bg-red-600 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-md hover:bg-red-700 active:scale-95 transition-all flex items-center gap-1.5"
-                          >
-                            <Trash2 size={14} />
-                            Eliminar
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Dropzone/Upload Button state
-                      <label className="flex flex-col items-center justify-center w-full aspect-video max-h-40 border-2 border-dashed border-zinc-300 hover:border-black bg-zinc-50 hover:bg-zinc-100/30 rounded-2xl cursor-pointer transition-all duration-300 p-6 text-center group">
-                        <div className="flex flex-col items-center justify-center space-y-2">
-                          <div className="p-3 bg-zinc-100 rounded-full text-zinc-400 group-hover:text-black group-hover:bg-white shadow-sm transition-all duration-300">
-                            <Upload size={18} strokeWidth={2.5} />
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black uppercase text-zinc-700 tracking-wider">Subir Foto desde tu PC / Celular</p>
-                            <p className="text-[9px] text-zinc-400 mt-1 uppercase tracking-wide">Haz clic para buscar en tus archivos</p>
-                          </div>
-                        </div>
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setProductForm(prev => ({ ...prev, imageUrl: reader.result as string }));
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex gap-6 pt-2">

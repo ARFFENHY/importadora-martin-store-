@@ -7,7 +7,22 @@ import { Plus, Minus, ShoppingCart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product } from "@/types";
 import { useCartStore } from "@/store/useCartStore";
+import { useConfigStore } from "@/store/useConfigStore";
 import { formatPrice } from "@/lib/utils";
+
+function getContrastColor(hex: string | undefined) {
+  if (!hex || hex.length < 6) return "#FFFFFF";
+  const cleanHex = hex.replace("#", "");
+  if (cleanHex.length !== 6 && cleanHex.length !== 3) return "#FFFFFF";
+  const expandedHex = cleanHex.length === 3 
+    ? cleanHex.split("").map(c => c + c).join("") 
+    : cleanHex;
+  const r = parseInt(expandedHex.substring(0, 2), 16);
+  const g = parseInt(expandedHex.substring(2, 4), 16);
+  const b = parseInt(expandedHex.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "#000000" : "#FFFFFF";
+}
 
 interface ProductCardProps {
   product: Product;
@@ -15,8 +30,13 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { items, addItem, updateQuantity } = useCartStore();
+  const { colors } = useConfigStore();
   const cartItem = items.find((item) => item.id === product.id);
   const quantity = cartItem?.quantity || 0;
+
+  const bgNew = colors.badgeNew || "#F59E0B";
+  const bgFeatured = colors.badgeFeatured || "#18181B";
+  const bgStock = colors.badgeStock || "#71717A";
 
   return (
     <motion.div
@@ -38,20 +58,45 @@ export function ProductCard({ product }: ProductCardProps) {
           />
           
           {/* Badges */}
-          <div className="absolute left-2 top-2 flex flex-col gap-1">
+          <div className="absolute left-2 top-2 flex flex-col gap-1 z-10">
             {product.isNew && (
-              <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-black uppercase tracking-wider">
+              <span 
+                style={{ backgroundColor: bgNew, color: getContrastColor(bgNew) }}
+                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
+              >
                 Nuevo
               </span>
             )}
+            {product.isFeatured && (
+              <span 
+                style={{ backgroundColor: bgFeatured, color: getContrastColor(bgFeatured) }}
+                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
+              >
+                Destacado
+              </span>
+            )}
             {product.discount && (
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+              <span className="rounded-full bg-red-600 px-2 py-0.5 text-[9px] font-black text-white uppercase tracking-wider shadow-sm">
                 -{product.discount}%
               </span>
             )}
-            {product.stock === 0 && (
-              <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+            {product.stock === 0 ? (
+              <span className="rounded-full bg-red-600 px-2 py-0.5 text-[9px] font-black text-white uppercase tracking-wider shadow-sm">
                 Sin Stock
+              </span>
+            ) : product.stock !== undefined ? (
+              <span 
+                style={{ backgroundColor: bgStock, color: getContrastColor(bgStock) }}
+                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
+              >
+                Stock: {product.stock}
+              </span>
+            ) : (
+              <span 
+                style={{ backgroundColor: bgStock, color: getContrastColor(bgStock) }}
+                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
+              >
+                Stock: Ilimitado
               </span>
             )}
           </div>

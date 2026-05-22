@@ -8,12 +8,29 @@ import { PRODUCTS as STATIC_PRODUCTS } from "@/data/products";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 import { useProductStore } from "@/store/useProductStore";
+import { useConfigStore } from "@/store/useConfigStore";
+
+function getContrastColor(hex: string | undefined) {
+  if (!hex || hex.length < 6) return "#FFFFFF";
+  const cleanHex = hex.replace("#", "");
+  if (cleanHex.length !== 6 && cleanHex.length !== 3) return "#FFFFFF";
+  const expandedHex = cleanHex.length === 3 
+    ? cleanHex.split("").map(c => c + c).join("") 
+    : cleanHex;
+  const r = parseInt(expandedHex.substring(0, 2), 16);
+  const g = parseInt(expandedHex.substring(2, 4), 16);
+  const b = parseInt(expandedHex.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "#000000" : "#FFFFFF";
+}
 
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { products } = useProductStore();
+  const { colors } = useConfigStore();
   const [mounted, setMounted] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -25,6 +42,10 @@ export default function ProductPage() {
   const { addItem, updateQuantity, items } = useCartStore();
   const cartItem = items.find((item) => item.id === product?.id);
   const quantity = cartItem?.quantity || 0;
+
+  const bgNew = colors.badgeNew || "#F59E0B";
+  const bgFeatured = colors.badgeFeatured || "#18181B";
+  const bgStock = colors.badgeStock || "#71717A";
 
   if (!product) {
     return (
@@ -61,18 +82,59 @@ export default function ProductPage() {
       </div>
 
       {/* Image Gallery */}
-      <div className="relative aspect-square w-full overflow-hidden bg-white">
-        <Image
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          className={`object-contain p-8 ${product.stock === 0 ? "grayscale opacity-60" : ""}`}
-          priority
-          unoptimized
-        />
-        {product.isNew && (
-          <div className="absolute bottom-6 left-6 rounded-full bg-black px-4 py-1 text-xs font-bold text-white uppercase tracking-wider">
-            Nuevo Ingreso
+      <div className="flex flex-col bg-white">
+        <div className="relative aspect-square w-full overflow-hidden bg-white">
+          <Image
+            src={product.images[activeImageIndex] || product.images[0]}
+            alt={product.name}
+            fill
+            className={`object-contain p-8 transition-all duration-300 ${product.stock === 0 ? "grayscale opacity-60" : ""}`}
+            priority
+            unoptimized
+          />
+          <div className="absolute bottom-6 left-6 flex flex-col gap-2 z-10">
+            {product.isNew && (
+              <div 
+                style={{ backgroundColor: bgNew, color: getContrastColor(bgNew) }}
+                className="rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-wider shadow-md"
+              >
+                Nuevo Ingreso
+              </div>
+            )}
+            {product.isFeatured && (
+              <div 
+                style={{ backgroundColor: bgFeatured, color: getContrastColor(bgFeatured) }}
+                className="rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-wider shadow-md"
+              >
+                Destacado Especial
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Thumbnails Row */}
+        {product.images && product.images.length > 1 && (
+          <div className="flex justify-center gap-2.5 px-6 pb-6 overflow-x-auto custom-scrollbar">
+            {product.images.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveImageIndex(idx)}
+                style={{ 
+                  borderColor: activeImageIndex === idx ? (colors.secondary || "#3B82F6") : (colors.border || "#E5E5E5")
+                }}
+                className={`relative w-16 h-16 rounded-xl border-2 overflow-hidden bg-zinc-50 shrink-0 transition-all ${
+                  activeImageIndex === idx ? "scale-105 shadow-sm" : "hover:scale-102 hover:border-zinc-300"
+                }`}
+              >
+                <Image
+                  src={img}
+                  alt={`Thumbnail ${idx + 1}`}
+                  fill
+                  className="object-contain p-1"
+                  unoptimized
+                />
+              </button>
+            ))}
           </div>
         )}
       </div>
