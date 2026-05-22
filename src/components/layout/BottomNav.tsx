@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 
 const navItems = [
-  { icon: Home, label: "Inicio", href: "/" },
+  { icon: Home, label: "Inicio", href: "/catalogo" },
   { icon: LayoutGrid, label: "Categorías", href: "/categorias" },
   { icon: Search, label: "Buscar", href: "/buscar" },
   { icon: ShoppingBag, label: "Carrito", href: "/cart", showBadge: true },

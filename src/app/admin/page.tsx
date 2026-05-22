@@ -549,7 +549,7 @@ export default function AdminPage() {
         
         {/* Botón flotante para volver al inicio */}
         <button 
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/catalogo")}
           className="absolute top-6 left-6 z-20 flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-xl text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all cursor-pointer active:scale-95 shadow-lg"
         >
           <ChevronLeft size={20} />

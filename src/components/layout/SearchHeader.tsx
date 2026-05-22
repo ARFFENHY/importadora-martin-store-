@@ -14,7 +14,7 @@ export function SearchHeader() {
     <header className="sticky top-0 z-40 bg-white/80 px-6 py-4 backdrop-blur-md">
       <div className="flex items-center gap-4">
         {/* Back Button */}
-        <Link href="/" className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-50 border border-border text-foreground transition-all hover:bg-zinc-100 hover:text-black active:scale-95 shadow-sm">
+        <Link href="/catalogo" className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-50 border border-border text-foreground transition-all hover:bg-zinc-100 hover:text-black active:scale-95 shadow-sm">
           <ChevronLeft size={24} />
         </Link>
 
