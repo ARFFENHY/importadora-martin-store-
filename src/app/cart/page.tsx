@@ -376,7 +376,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold text-zinc-400">Envío</span>
-                    <span className="text-sm font-black text-primary uppercase tracking-widest">A convenir</span>
+                    <span className="text-sm font-black text-white uppercase tracking-widest">A convenir</span>
                   </div>
                   
                   <div className="pt-8 mt-4 border-t border-white/10">
@@ -385,7 +385,7 @@ export default function CartPage() {
                       <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">IVA Incluido</span>
                     </div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-5xl font-black text-primary tracking-tighter leading-none">
+                      <span className="text-5xl font-black text-white tracking-tighter leading-none">
                         {formatPrice(getTotal())}
                       </span>
                     </div>
@@ -394,7 +394,7 @@ export default function CartPage() {
 
                 <button
                   onClick={() => router.push("/checkout")}
-                  className="mt-10 w-full flex items-center justify-center gap-3 bg-white text-black py-5 rounded-2xl font-black uppercase tracking-[0.1em] hover:bg-primary transition-all active:scale-95 shadow-2xl group"
+                  className="mt-10 w-full flex items-center justify-center gap-3 bg-white text-black py-5 rounded-2xl font-black uppercase tracking-[0.1em] hover:bg-zinc-100 transition-all active:scale-95 shadow-2xl group"
                 >
                   Iniciar Pago
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
