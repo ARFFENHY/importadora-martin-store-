@@ -2,18 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { SearchHeader } from "@/components/layout/SearchHeader";
 import { CategoryBar } from "@/components/features/categories/CategoryBar";
 import { ProductCard } from "@/components/features/products/ProductCard";
 import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES as STATIC_CATEGORIES } from "@/data/products";
 import { motion } from "framer-motion";
-import { ArrowRight, Zap, Star, Flame, Sparkles, ChevronLeft } from "lucide-react";
+import { ArrowRight, Zap, Star, Flame, Sparkles } from "lucide-react";
 import { useConfigStore } from "@/store/useConfigStore";
 import { useProductStore } from "@/store/useProductStore";
 
 export default function CatalogoPage() {
-  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("todos");
   const { banner, store } = useConfigStore();
   const { products, categories } = useProductStore();
@@ -234,22 +232,6 @@ export default function CatalogoPage() {
           <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
             © {new Date().getFullYear()} {mounted ? store.name : "Importadora Martin Store"} - Todos los derechos reservados.
           </p>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/")}
-              className="text-[9px] text-zinc-400 hover:text-amber-500 font-black uppercase tracking-[0.2em] transition-colors cursor-pointer flex items-center gap-1"
-            >
-              <ChevronLeft size={10} />
-              Inicio
-            </button>
-            <span className="text-zinc-300">|</span>
-            <button
-              onClick={() => router.push("/admin")}
-              className="text-[9px] text-zinc-400 hover:text-amber-500 font-black uppercase tracking-[0.2em] transition-colors cursor-pointer"
-            >
-              Acceso Administrativo
-            </button>
-          </div>
         </footer>
       </main>
     </div>
