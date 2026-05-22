@@ -63,10 +63,12 @@ export default function CartPage() {
   // Effect to re-enable transitions after an instant snap jump
   useEffect(() => {
     if (!transitionEnabled) {
-      const timeout = setTimeout(() => {
-        setTransitionEnabled(true);
-      }, 50);
-      return () => clearTimeout(timeout);
+      let frameId = requestAnimationFrame(() => {
+        frameId = requestAnimationFrame(() => {
+          setTransitionEnabled(true);
+        });
+      });
+      return () => cancelAnimationFrame(frameId);
     }
   }, [transitionEnabled]);
 
@@ -112,7 +114,7 @@ export default function CartPage() {
     }, 3000); // 3 seconds active pacing
 
     return () => clearInterval(interval);
-  }, [mounted, items.length, isLoopable, isHovered, currentIndex]);
+  }, [mounted, items.length, isLoopable, isHovered]);
 
   // Touch Swipe Gesture Handlers
   const minSwipeDistance = 50;
