@@ -24,7 +24,7 @@ interface AuthState {
 }
 
 // Email de admin en Firebase Auth (formato requerido por Firebase)
-const ADMIN_EMAIL = 'admin@importadora-martin.com';
+const ADMIN_EMAIL = 'importadoramartinstore@hotmail.com';
 
 export const useAuthStore = create<AuthState>()(
   persist(
