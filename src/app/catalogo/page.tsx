@@ -11,6 +11,14 @@ import { ArrowRight, Zap, Star, Flame, Sparkles } from "lucide-react";
 import { useConfigStore } from "@/store/useConfigStore";
 import { useProductStore } from "@/store/useProductStore";
 
+const slugify = (text: string) => 
+  text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+
 export default function CatalogoPage() {
   const [activeCategory, setActiveCategory] = useState("todos");
   const { banner, store } = useConfigStore();
@@ -19,6 +27,37 @@ export default function CatalogoPage() {
 
   useEffect(() => {
     setMounted(true);
+
+    // Initial load from URL query params
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get("category");
+      if (cat) {
+        setActiveCategory(cat.toLowerCase());
+      }
+    }
+
+    // Subscribe to category changes from BottomNav
+    const handleCategoryChange = (e: any) => {
+      if (e.detail) {
+        setActiveCategory(e.detail.toLowerCase());
+      }
+    };
+
+    // Handle browser back/forward history events
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get("category") || "todos";
+      setActiveCategory(cat.toLowerCase());
+    };
+
+    window.addEventListener("category-changed", handleCategoryChange);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("category-changed", handleCategoryChange);
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, []);
 
   const displayProducts = mounted ? products : STATIC_PRODUCTS;
@@ -26,7 +65,7 @@ export default function CatalogoPage() {
 
   const filteredProducts = activeCategory === "todos"
     ? displayProducts
-    : displayProducts.filter(p => p.category.toLowerCase() === activeCategory.toLowerCase());
+    : displayProducts.filter(p => slugify(p.category) === activeCategory);
 
   const featuredProducts = displayProducts.filter(p => p.isFeatured);
   const newProducts = displayProducts.filter(p => p.isNew);
