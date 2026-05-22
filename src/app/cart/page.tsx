@@ -17,7 +17,7 @@ export default function CartPage() {
   const { items, updateQuantity, removeItem, getTotal, clearCart } = useCartStore();
   const [deliveryMethod, setDeliveryMethod] = React.useState<"delivery" | "pickup">("pickup");
   const { products } = useProductStore();
-  const { colors } = useConfigStore();
+  const { colors, store } = useConfigStore();
   const [mounted, setMounted] = useState(false);
 
   // Carousel States
@@ -78,11 +78,17 @@ export default function CartPage() {
 
   // Auto-play Interval
   useEffect(() => {
-    if (!mounted || items.length === 0 || maxIndex <= 0 || isHovered) return;
+    if (!mounted || items.length === 0 || maxIndex <= 0) return;
+
+    // Check if the current device is a touch screen (coarse pointer) to prevent sticky hover states
+    const isTouchDevice = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+    const shouldPause = isHovered && !isTouchDevice;
+
+    if (shouldPause) return;
 
     const interval = setInterval(() => {
       handleNext();
-    }, 4000);
+    }, 3000); // 3 seconds active pacing
 
     return () => clearInterval(interval);
   }, [mounted, items.length, maxIndex, isHovered, currentIndex]);
@@ -268,8 +274,8 @@ export default function CartPage() {
                   className="bg-zinc-50 rounded-2xl p-4 border border-dashed border-border"
                 >
                   <p className="text-xs text-muted font-medium leading-relaxed">
-                    Podés retirar tu pedido de lunes a viernes de 9:00 a 18:00 hs en nuestra sucursal central: <br />
-                    <strong className="text-foreground">Alvear 2580, Ramos Mejía, Buenos Aires.</strong>
+                    Podés retirar tu pedido de {store.pickupHours || "lunes a viernes de 9:00 a 18:00 hs"} en nuestra sucursal central: <br />
+                    <strong className="text-foreground">{store.pickupAddress || "Alvear 2580, Ramos Mejía, Buenos Aires."}</strong>
                   </p>
                 </motion.div>
               ) : (
@@ -418,7 +424,7 @@ export default function CartPage() {
                 key={`${currentIndex}-${isHovered}`}
                 initial={{ width: "0%" }}
                 animate={isHovered ? { width: "0%" } : { width: "100%" }}
-                transition={{ duration: isHovered ? 0 : 4, ease: "linear" }}
+                transition={{ duration: isHovered ? 0 : 3, ease: "linear" }}
                 className="h-full"
                 style={{ backgroundColor: colors.primary }}
               />

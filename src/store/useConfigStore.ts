@@ -19,6 +19,8 @@ export interface StoreConfig {
   name: string;
   whatsAppNumber: string;
   logoUrl?: string;
+  pickupHours?: string;
+  pickupAddress?: string;
 }
 
 export interface BannerConfig {
@@ -63,6 +65,8 @@ const DEFAULT_STORE: StoreConfig = {
   name: 'Importadora Martin Store',
   whatsAppNumber: '5491122334455',
   logoUrl: '',
+  pickupHours: 'lunes a viernes de 9:00 a 18:00 hs',
+  pickupAddress: 'Alvear 2580, Ramos Mejía, Buenos Aires.',
 };
 
 const DEFAULT_BANNER: BannerConfig = {

@@ -1986,6 +1986,30 @@ export default function AdminPage() {
                       />
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Horarios de Retiro</label>
+                      <input 
+                        type="text" 
+                        value={localStore.pickupHours || ""}
+                        onChange={(e) => handleStoreChange("pickupHours", e.target.value)}
+                        placeholder="Ej: lunes a viernes de 9:00 a 18:00 hs"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-black outline-none transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Dirección de Retiro</label>
+                      <input 
+                        type="text" 
+                        value={localStore.pickupAddress || ""}
+                        onChange={(e) => handleStoreChange("pickupAddress", e.target.value)}
+                        placeholder="Ej: Alvear 2580, Ramos Mejía, Buenos Aires."
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-black outline-none transition-all"
+                      />
+                    </div>
+                  </div>
                 </section>
 
                 {/* Danger Zone */}
