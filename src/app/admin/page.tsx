@@ -179,7 +179,7 @@ export default function AdminPage() {
   const [mounted, setMounted] = useState(false);
 
   // Dynamic values based on current domain
-  const [storeUrl, setStoreUrl] = useState("http://localhost:3000");
+  const [storeUrl, setStoreUrl] = useState("http://localhost:3000/catalogo");
 
   // Local state for branding forms
   const [localColors, setLocalColors] = useState<ColorsConfig>({ ...colors });
@@ -272,7 +272,7 @@ export default function AdminPage() {
   useEffect(() => {
     setMounted(true);
     if (typeof window !== "undefined") {
-      setStoreUrl(window.location.origin);
+      setStoreUrl(window.location.origin + "/catalogo");
     }
   }, []);
 
