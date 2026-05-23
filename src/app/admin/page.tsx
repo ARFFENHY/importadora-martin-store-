@@ -197,7 +197,7 @@ export default function AdminPage() {
   };
 
   // Navigation State
-  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "branding" | "share" | "security" | "designer" | "qr">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "branding" | "share" | "security" | "designer">("overview");
   const [selectedPeriod, setSelectedPeriod] = useState<"today" | "week" | "month" | "all">("all");
 
   // Hydration state
@@ -861,17 +861,6 @@ export default function AdminPage() {
             Compartir
           </button>
           <button
-            onClick={() => setActiveTab("qr")}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-              activeTab === "qr" ? "bg-black text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50"
-            }`}
-          >
-            <div className="flex h-4 w-4 items-center justify-center rounded border-2 border-current">
-              <div className="h-1.5 w-1.5 bg-current rounded-sm"></div>
-            </div>
-            Código QR
-          </button>
-          <button
             onClick={() => setActiveTab("designer")}
             className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === "designer" ? "bg-black text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50"
@@ -1486,45 +1475,6 @@ export default function AdminPage() {
                   })
                 )}
               </div>
-            </motion.div>
-          )}
-
-          {/* TAB: QR CODE */}
-          {activeTab === "qr" && (
-            <motion.div
-              key="qr"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              className="flex flex-col items-center justify-center p-12 text-center bg-white border border-zinc-200 rounded-[2rem] shadow-sm"
-            >
-              <h2 className="text-xl font-black text-black mb-2 uppercase tracking-tight">Código QR de la Tienda</h2>
-              <p className="text-zinc-500 mb-8 max-w-md text-sm">
-                Descargá este código QR, imprimilo y pegalo en tu local o en tus redes sociales para que tus clientes entren directo a la tienda.
-              </p>
-              
-              <div className="relative group p-4 bg-zinc-50 rounded-3xl border border-zinc-100">
-                <StoreQRCode size={250} showLogo={true} />
-              </div>
-              
-              <button 
-                onClick={() => {
-                  const canvas = document.getElementById('store-qr-code') as HTMLCanvasElement;
-                  if (canvas) {
-                    const pngUrl = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = pngUrl;
-                    downloadLink.download = `${(store.name || 'tienda').toLowerCase().replace(/\s+/g, '-')}-qr.png`;
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
-                  }
-                }}
-                className="mt-8 flex items-center gap-2 rounded-2xl bg-black px-8 py-4 text-xs font-black text-white shadow-lg transition-transform active:scale-95 hover:bg-zinc-800 uppercase tracking-widest"
-              >
-                <Download size={18} />
-                Descargar Código QR
-              </button>
             </motion.div>
           )}
 
