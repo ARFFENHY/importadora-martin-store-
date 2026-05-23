@@ -50,6 +50,7 @@ import { useOrderStore, Order } from "@/store/useOrderStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { formatPrice } from "@/lib/utils";
 import Image from "next/image";
+import { QRCodeCanvas } from "qrcode.react";
 import { BannerDesigner } from "@/components/features/designer/BannerDesigner";
 import { StoreQRCode } from "@/components/ui/StoreQRCode";
 import { ManualSaleModal } from "@/components/features/admin/ManualSaleModal";
@@ -522,7 +523,7 @@ export default function AdminPage() {
         if (!qrContainerRef.current) return;
         setProductToast("Preparando código QR para compartir...");
         
-        const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2, useCORS: true, allowTaint: true });
+        const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2, useCORS: true });
         canvas.toBlob(async (blob) => {
           if (!blob) throw new Error("Canvas to Blob failed");
           const file = new File([blob], `qr_${(localStore.name || store.name || 'catalogo').toLowerCase().replace(/\s+/g, '_')}.png`, { type: 'image/png' });
@@ -2211,13 +2212,15 @@ export default function AdminPage() {
                   <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 relative z-10">Código QR Oficial</h4>
 
                   <div className="my-6 bg-white p-4 rounded-2xl relative z-10 shadow-lg flex items-center justify-center">
-                    <Image 
-                      src={qrUrl}
-                      alt="Marketing QR Code"
-                      width={180}
-                      height={180}
+                    <QRCodeCanvas
+                      id="marketing-qr-code"
+                      value={storeUrl}
+                      size={180}
+                      bgColor={"#ffffff"}
+                      fgColor={"#000000"}
+                      level={"H"}
+                      includeMargin={false}
                       className="rounded-lg relative"
-                      unoptimized
                     />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-[3px] border-white z-20 overflow-hidden">
                       <img 
