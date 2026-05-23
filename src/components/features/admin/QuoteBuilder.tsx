@@ -524,7 +524,6 @@ export function QuoteBuilder() {
                     <h1 className="text-xl font-black tracking-tight text-zinc-900 uppercase">
                       {store.name || "IMPORTADORA MARTIN STORE"}
                     </h1>
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">Herramientas Profesionales</p>
                     <p className="text-[10px] text-zinc-400 font-semibold mt-1">
                       {store.pickupAddress || "Dirección: Ramos Mejía, Buenos Aires."}
                     </p>
@@ -669,11 +668,7 @@ export function QuoteBuilder() {
 
               {/* Signature block Pie de página */}
               <div className="flex flex-row justify-between items-center text-[10px] text-zinc-400 font-bold uppercase tracking-widest pt-4 border-t border-zinc-100">
-                <span>© {new Date().getFullYear()} {store.name || "Importadora Martin Store"}</span>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-32 h-[1px] bg-zinc-300" />
-                  <span>Firma Autorizada</span>
-                </div>
+                <span>{store.name || "Importadora Martin Store"}</span>
               </div>
             </div>
             

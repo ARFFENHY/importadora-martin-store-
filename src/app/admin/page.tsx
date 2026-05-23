@@ -2271,22 +2271,6 @@ export default function AdminPage() {
                       <p className="text-[10px] text-zinc-400 mt-1">Escanea para explorar el catálogo móvil</p>
                     </div>
 
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={handleShareQR}
-                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/10"
-                      >
-                        <Share2 size={12} />
-                        Compartir QR
-                      </button>
-                      <button 
-                        onClick={handleDownloadQR}
-                        className="flex-1 border border-zinc-700 hover:bg-zinc-800 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                      >
-                        <Upload size={12} className="rotate-180" />
-                        Descargar QR
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
