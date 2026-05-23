@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronLeft, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck, Building2 } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, ArrowRight, ShoppingCart, Truck, Building2 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { formatPrice } from "@/lib/utils";
 import { PRODUCTS as STATIC_PRODUCTS } from "@/data/products";
@@ -38,7 +38,7 @@ export default function CartPage() {
           animate={{ scale: 1, opacity: 1 }}
           className="mb-8 rounded-full bg-zinc-50 p-12 text-zinc-200"
         >
-          <ShoppingBag size={100} strokeWidth={1} />
+          <ShoppingCart size={100} strokeWidth={1} />
         </motion.div>
         <h1 className="text-3xl font-black text-foreground uppercase tracking-tighter">Carrito Vacío</h1>
         <p className="mt-4 text-muted max-w-[280px]">
@@ -297,7 +297,7 @@ export default function CartPage() {
           <div className="flex items-end justify-between mb-6">
             <div className="flex flex-col">
               <h3 className="text-xl font-black text-foreground uppercase tracking-tight flex items-center gap-2">
-                <ShoppingBag size={20} style={{ color: colors.primary }} />
+                <ShoppingCart size={20} style={{ color: colors.primary }} />
                 Completa tu compra
               </h3>
               <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">

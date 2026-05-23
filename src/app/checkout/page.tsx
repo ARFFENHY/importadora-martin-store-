@@ -95,7 +95,7 @@ export default function CheckoutPage() {
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
     
     clearCart();
-    router.push("/");
+    router.push("/catalogo");
   };
 
   return (

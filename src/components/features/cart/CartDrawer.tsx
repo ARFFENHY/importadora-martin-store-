@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, ShoppingBag, Trash2, Plus, Minus, Send, ShoppingCart, ArrowRight } from "lucide-react";
+import { X, Trash2, Plus, Minus, Send, ShoppingCart, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/store/useCartStore";
 import { formatPrice } from "@/lib/utils";
@@ -62,7 +62,7 @@ export function CartDrawer() {
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                   <div className="mb-6 rounded-full bg-zinc-50 p-10 text-zinc-200">
-                    <ShoppingBag size={80} strokeWidth={1} />
+                    <ShoppingCart size={80} strokeWidth={1} />
                   </div>
                   <h3 className="text-xl font-bold text-foreground">Tu carrito está vacío</h3>
                   <p className="mt-2 text-sm text-muted max-w-[220px]">

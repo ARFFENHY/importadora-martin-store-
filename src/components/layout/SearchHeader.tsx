@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, ShoppingBag } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -16,7 +16,7 @@ export function SearchHeader() {
 
         {/* Cart Icon */}
         <Link href="/cart" className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-50 border border-border text-foreground transition-all active:scale-95 shadow-sm">
-          <ShoppingBag size={24} />
+          <ShoppingCart size={24} />
           <AnimatePresence>
             {itemCount > 0 && (
               <motion.span

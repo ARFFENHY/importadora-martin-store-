@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Search, ShoppingBag, User, LayoutGrid, X, ArrowRight, Phone } from "lucide-react";
+import { Home, Search, ShoppingCart, User, LayoutGrid, X, ArrowRight, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
@@ -15,7 +15,7 @@ const navItems = [
   { icon: Home, label: "Inicio", href: "/" },
   { icon: LayoutGrid, label: "Categorías", href: "/categorias" },
   { icon: Search, label: "Buscar", href: "/buscar" },
-  { icon: ShoppingBag, label: "Carrito", href: "/cart", showBadge: true },
+  { icon: ShoppingCart, label: "Carrito", href: "/cart", showBadge: true },
   { icon: User, label: "Perfil", href: "/perfil" },
 ];
 
@@ -50,6 +50,16 @@ export function BottomNav() {
 
   // Al darle inicio llevarle a la pagina principal y alli debe ocultarse no debe aparecer
   if (pathname === "/") return null;
+
+  // No mostrar en la tienda pública (catálogo, producto, carrito, checkout)
+  if (
+    pathname.startsWith("/catalogo") ||
+    pathname.startsWith("/product") ||
+    pathname.startsWith("/cart") ||
+    pathname.startsWith("/checkout")
+  ) {
+    return null;
+  }
 
   const handleSelectCategory = (slug: string) => {
     // Dispatch event in case we are already on /catalogo
@@ -236,7 +246,7 @@ export function BottomNav() {
                       </div>
                     ) : filteredSearchProducts.length === 0 ? (
                       <div className="text-center py-8 text-zinc-400 flex flex-col items-center justify-center gap-2">
-                        <ShoppingBag size={32} className="text-zinc-200" />
+                        <ShoppingCart size={32} className="text-zinc-200" />
                         <p className="text-[10px] font-black uppercase tracking-wider">No se encontraron artículos</p>
                       </div>
                     ) : (

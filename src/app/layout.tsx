@@ -5,6 +5,7 @@ import "./globals.css";
 import { CartDrawer } from "@/components/features/cart/CartDrawer";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { WhatsAppFloating } from "@/components/ui/WhatsAppFloating";
+import { CartFloating } from "@/components/ui/CartFloating";
 import { ThemeInitializer } from "@/components/layout/ThemeInitializer";
 import { AdminNavWrapper } from "@/components/layout/AdminNavWrapper";
 import { FirestoreSync } from "@/components/layout/FirestoreSync";
@@ -64,6 +65,7 @@ export default function RootLayout({
         <CartDrawer />
         <BottomNav />
         <WhatsAppFloating />
+        <CartFloating />
       </body>
     </html>
   );
