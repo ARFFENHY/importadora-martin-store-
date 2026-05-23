@@ -38,7 +38,8 @@ import {
   ChevronLeft,
   RefreshCw,
   ShoppingBag,
-  Grid
+  Grid,
+  X
 } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
 import { useBannerStore, BannerLayer, BannerFormat, BANNER_FORMATS, PRESET_TEMPLATES } from "@/store/useBannerStore";
@@ -81,6 +82,7 @@ export function BannerDesigner() {
 
   // Navigation tabs inside the designer sidebar
   const [sidebarTab, setSidebarTab] = useState<"templates" | "products" | "text" | "stickers" | "images" | "layers">("templates");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Local state
   const [editorScale, setEditorScale] = useState(1);
@@ -497,6 +499,7 @@ export function BannerDesigner() {
       align: 'center',
       fontWeight
     });
+    setIsSidebarOpen(false);
   };
 
   // Replace custom image layer helper
@@ -552,6 +555,7 @@ export function BannerDesigner() {
     };
     reader.readAsDataURL(file);
     e.target.value = ""; // Reset
+    setIsSidebarOpen(false);
   };
 
   const handleInjectProduct = (prod: Product) => {
@@ -639,6 +643,7 @@ export function BannerDesigner() {
 
     // Unselect all so layers look cohesive
     setTimeout(() => selectLayer(null), 300);
+    setIsSidebarOpen(false);
   };
 
   // High Resolution Render & Export Core
@@ -1011,7 +1016,7 @@ export function BannerDesigner() {
   };
 
   return (
-    <div className="flex flex-col xl:flex-row h-[82vh] bg-zinc-50 border border-zinc-200 rounded-3xl overflow-hidden shadow-premium select-none relative">
+    <div className="flex flex-col lg:flex-row h-[82vh] bg-zinc-50 border border-zinc-200 rounded-3xl overflow-hidden shadow-premium select-none relative w-full">
       
       {/* Dynamic guides overlay lines inside the editor */}
       {snapX !== null && (
@@ -1037,11 +1042,29 @@ export function BannerDesigner() {
         />
       )}
 
+      {/* Backdrop overlay for mobile drawer */}
+      {isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          className="absolute inset-0 bg-black/40 backdrop-blur-xs z-25 lg:hidden transition-all duration-300"
+        />
+      )}
+
       {/* 1. LEFT SIDEBAR PANEL (Toolbox & Elements selection) */}
-      <div className="w-full xl:w-[380px] bg-white border-b xl:border-b-0 xl:border-r border-zinc-200 flex flex-col shrink-0 z-30">
+      <div className={`absolute lg:relative top-0 bottom-0 left-0 w-[300px] sm:w-[360px] lg:w-[380px] bg-white border-r lg:border-b-0 border-zinc-200 flex flex-col shrink-0 z-30 transition-transform duration-300 ${
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      }`}>
         
         {/* Horizontal icon bar */}
-        <div className="flex border-b border-zinc-200 p-2 overflow-x-auto no-scrollbar gap-1">
+        <div className="flex border-b border-zinc-200 p-2 overflow-x-auto no-scrollbar gap-1 items-center w-full">
+          {/* Close button for mobile drawer */}
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden flex items-center justify-center p-2 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-xl mr-1 shrink-0 cursor-pointer"
+            title="Cerrar herramientas"
+          >
+            <X size={18} />
+          </button>
           <button
             onClick={() => setSidebarTab("templates")}
             className={`flex-1 flex flex-col items-center gap-1 py-2 px-1.5 rounded-xl transition-all cursor-pointer ${
@@ -1104,7 +1127,7 @@ export function BannerDesigner() {
         </div>
 
         {/* Tab Content Drawer */}
-        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar max-h-[35vh] xl:max-h-none">
+        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar max-h-[60vh] lg:max-h-none">
           <AnimatePresence mode="wait">
             
             {/* TAB: TEMPLATES */}
@@ -1124,6 +1147,7 @@ export function BannerDesigner() {
                         onClick={() => {
                           if (window.confirm(`¿Quieres cargar la plantilla "${tpl.name}"? Se perderá tu diseño actual no guardado.`)) {
                             loadDesign(tpl.id);
+                            setIsSidebarOpen(false);
                           }
                         }}
                         className="group flex items-center justify-between p-3 border border-zinc-200 hover:border-amber-400 rounded-xl hover:bg-zinc-50 transition-all text-left cursor-pointer"
@@ -1154,7 +1178,10 @@ export function BannerDesigner() {
                           className="flex items-center justify-between p-2.5 border border-zinc-200 rounded-xl hover:border-zinc-300 transition-all"
                         >
                           <button
-                            onClick={() => loadDesign(dsg.id)}
+                            onClick={() => {
+                              loadDesign(dsg.id);
+                              setIsSidebarOpen(false);
+                            }}
                             className="flex-1 text-left font-semibold text-zinc-800 text-xs truncate mr-2 cursor-pointer hover:text-amber-600"
                           >
                             {dsg.name}
@@ -1273,17 +1300,20 @@ export function BannerDesigner() {
                 <h4 className="text-xs font-black uppercase text-zinc-400 tracking-wider">Etiquetas Publicitarias</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => addLayer({
-                      type: 'sticker',
-                      name: 'Sticker: Oferta',
-                      x: 40,
-                      y: 40,
-                      width: 20,
-                      height: 20,
-                      rotation: 12,
-                      opacity: 1,
-                      stickerType: 'oferta'
-                    })}
+                    onClick={() => {
+                      addLayer({
+                        type: 'sticker',
+                        name: 'Sticker: Oferta',
+                        x: 40,
+                        y: 40,
+                        width: 20,
+                        height: 20,
+                        rotation: 12,
+                        opacity: 1,
+                        stickerType: 'oferta'
+                      });
+                      setIsSidebarOpen(false);
+                    }}
                     className="flex flex-col items-center gap-2 p-3 border border-zinc-200 hover:border-amber-400 rounded-2xl cursor-pointer hover:bg-zinc-50 transition-all"
                   >
                     <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-red-50">
@@ -1293,17 +1323,20 @@ export function BannerDesigner() {
                   </button>
 
                   <button
-                    onClick={() => addLayer({
-                      type: 'sticker',
-                      name: 'Sticker: 2X1',
-                      x: 40,
-                      y: 40,
-                      width: 20,
-                      height: 20,
-                      rotation: -10,
-                      opacity: 1,
-                      stickerType: 'promo-2x1'
-                    })}
+                    onClick={() => {
+                      addLayer({
+                        type: 'sticker',
+                        name: 'Sticker: 2X1',
+                        x: 40,
+                        y: 40,
+                        width: 20,
+                        height: 20,
+                        rotation: -10,
+                        opacity: 1,
+                        stickerType: 'promo-2x1'
+                      });
+                      setIsSidebarOpen(false);
+                    }}
                     className="flex flex-col items-center gap-2 p-3 border border-zinc-200 hover:border-amber-400 rounded-2xl cursor-pointer hover:bg-zinc-50 transition-all"
                   >
                     <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-yellow-50">
@@ -1313,17 +1346,20 @@ export function BannerDesigner() {
                   </button>
 
                   <button
-                    onClick={() => addLayer({
-                      type: 'sticker',
-                      name: 'Sticker: Nuevo',
-                      x: 40,
-                      y: 40,
-                      width: 22,
-                      height: 12,
-                      rotation: 0,
-                      opacity: 1,
-                      stickerType: 'nuevo'
-                    })}
+                    onClick={() => {
+                      addLayer({
+                        type: 'sticker',
+                        name: 'Sticker: Nuevo',
+                        x: 40,
+                        y: 40,
+                        width: 22,
+                        height: 12,
+                        rotation: 0,
+                        opacity: 1,
+                        stickerType: 'nuevo'
+                      });
+                      setIsSidebarOpen(false);
+                    }}
                     className="flex flex-col items-center gap-2 p-3 border border-zinc-200 hover:border-amber-400 rounded-2xl cursor-pointer hover:bg-zinc-50 transition-all"
                   >
                     <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-blue-50">
@@ -1333,17 +1369,20 @@ export function BannerDesigner() {
                   </button>
 
                   <button
-                    onClick={() => addLayer({
-                      type: 'sticker',
-                      name: 'Sticker: Últimas',
-                      x: 35,
-                      y: 40,
-                      width: 30,
-                      height: 12,
-                      rotation: 0,
-                      opacity: 1,
-                      stickerType: 'ultimas'
-                    })}
+                    onClick={() => {
+                      addLayer({
+                        type: 'sticker',
+                        name: 'Sticker: Últimas',
+                        x: 35,
+                        y: 40,
+                        width: 30,
+                        height: 12,
+                        rotation: 0,
+                        opacity: 1,
+                        stickerType: 'ultimas'
+                      });
+                      setIsSidebarOpen(false);
+                    }}
                     className="flex flex-col items-center gap-2 p-3 border border-zinc-200 hover:border-amber-400 rounded-2xl cursor-pointer hover:bg-zinc-50 transition-all"
                   >
                     <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-amber-50">
@@ -1751,6 +1790,18 @@ export function BannerDesigner() {
           onClick={() => selectLayer(null)}
           className="flex-1 p-6 overflow-hidden flex items-center justify-center bg-zinc-100/60 custom-scrollbar relative"
         >
+          {/* Floating tools button for mobile drawer overlay */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsSidebarOpen(true);
+            }}
+            className="absolute bottom-6 left-6 z-20 lg:hidden flex items-center gap-2 px-5 py-4 rounded-full bg-amber-500 hover:bg-amber-600 text-xs font-black uppercase text-black shadow-lg active:scale-95 transition-all border border-amber-400 cursor-pointer"
+          >
+            <Sparkles size={16} />
+            <span>Herramientas</span>
+          </button>
+
           {/* Canvas Wrapper */}
           <div
             ref={canvasRef}
