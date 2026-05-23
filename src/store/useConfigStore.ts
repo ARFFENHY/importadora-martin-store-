@@ -125,13 +125,14 @@ export const useConfigStore = create<ConfigState>()(
     {
       name: 'store-config-storage',
       version: 1,
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as ConfigState & { store?: { whatsAppNumber?: string } };
         if (version === 0) {
-          if (persistedState?.store?.whatsAppNumber === '5491122334455') {
-            persistedState.store.whatsAppNumber = '5491172214696';
+          if (state?.store?.whatsAppNumber === '5491122334455') {
+            state.store.whatsAppNumber = '5491172214696';
           }
         }
-        return persistedState;
+        return state;
       },
     }
   )

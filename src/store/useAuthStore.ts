@@ -4,10 +4,6 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updateEmail,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -19,7 +15,7 @@ interface AuthState {
   login: (usernameInput: string, passwordInput: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
-  updateCredentials: (newUsername: string, newPassword: string) => void;
+  updateCredentials: (newUsername: string, _newPassword: string) => void;
   initAuthListener: () => () => void;
 }
 
@@ -28,7 +24,7 @@ const ADMIN_EMAIL = 'importadoramartinstore@hotmail.com';
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       isAuthenticated: false,
       loginError: null,
       adminUsername: 'admin',
@@ -61,7 +57,8 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => set({ loginError: null }),
 
-      updateCredentials: (newUsername: string, newPassword: string) => {
+      updateCredentials: (newUsername: string, _newPassword: string) => {
+        void _newPassword;
         // Solo actualiza el nombre visual en UI (la contraseña real la maneja Firebase Auth)
         set({ adminUsername: newUsername.trim() });
       },

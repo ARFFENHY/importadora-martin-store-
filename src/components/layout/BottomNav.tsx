@@ -33,12 +33,16 @@ export function BottomNav() {
 
   // Reset search query when switching sheets
   useEffect(() => {
-    setSearchQuery("");
+    setTimeout(() => {
+      setSearchQuery("");
+    }, 0);
   }, [activeSheet]);
 
   // Hide sheets on navigation changes
   useEffect(() => {
-    setActiveSheet(null);
+    setTimeout(() => {
+      setActiveSheet(null);
+    }, 0);
   }, [pathname]);
 
   // Solo visible para el administrador autenticado

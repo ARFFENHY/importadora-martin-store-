@@ -26,21 +26,24 @@ export default function CatalogoPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => {
+      setMounted(true);
 
-    // Initial load from URL query params
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const cat = params.get("category");
-      if (cat) {
-        setActiveCategory(cat.toLowerCase());
+      // Initial load from URL query params
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const cat = params.get("category");
+        if (cat) {
+          setActiveCategory(cat.toLowerCase());
+        }
       }
-    }
+    }, 0);
 
     // Subscribe to category changes from BottomNav
-    const handleCategoryChange = (e: any) => {
-      if (e.detail) {
-        setActiveCategory(e.detail.toLowerCase());
+    const handleCategoryChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setActiveCategory(customEvent.detail.toLowerCase());
       }
     };
 
@@ -51,11 +54,11 @@ export default function CatalogoPage() {
       setActiveCategory(cat.toLowerCase());
     };
 
-    window.addEventListener("category-changed", handleCategoryChange);
+    window.addEventListener("category-changed", handleCategoryChange as EventListener);
     window.addEventListener("popstate", handlePopState);
 
     return () => {
-      window.removeEventListener("category-changed", handleCategoryChange);
+      window.removeEventListener("category-changed", handleCategoryChange as EventListener);
       window.removeEventListener("popstate", handlePopState);
     };
   }, []);
@@ -75,7 +78,7 @@ export default function CatalogoPage() {
     <div className="min-h-screen bg-white">
       <SearchHeader />
 
-      <main className="px-6 pb-32">
+      <main className="px-4 sm:px-6 pb-32">
         {/* Banner Hero */}
         <section className="mt-4">
           <motion.div
@@ -169,7 +172,7 @@ export default function CatalogoPage() {
                 <button className="text-xs font-bold text-black border-b-2 border-primary pb-0.5">Ver todo</button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {featuredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -209,7 +212,7 @@ export default function CatalogoPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {promotionProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -228,7 +231,7 @@ export default function CatalogoPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {displayProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -245,7 +248,7 @@ export default function CatalogoPage() {
               <span className="text-xs text-muted font-bold">{filteredProducts.length} productos</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

@@ -13,8 +13,6 @@ import {
   Save, 
   Sparkles, 
   Check, 
-  Flame, 
-  Star,
   Trash2,
   Info,
   TrendingUp,
@@ -25,11 +23,8 @@ import {
   Search,
   Edit,
   Copy,
-  ExternalLink,
   X,
   Phone,
-  MapPin,
-  CreditCard,
   User,
   Eye,
   Sliders,
@@ -41,19 +36,18 @@ import {
   EyeOff,
   Camera,
   Upload,
-  Folder,
-  Download
+  Folder
 } from "lucide-react";
 import { useConfigStore, ColorsConfig } from "@/store/useConfigStore";
 import { useProductStore } from "@/store/useProductStore";
-import { useOrderStore, Order } from "@/store/useOrderStore";
+import { useOrderStore } from "@/store/useOrderStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { formatPrice } from "@/lib/utils";
 import Image from "next/image";
 import { QRCodeCanvas } from "qrcode.react";
 import { BannerDesigner } from "@/components/features/designer/BannerDesigner";
-import { StoreQRCode } from "@/components/ui/StoreQRCode";
 import { ManualSaleModal } from "@/components/features/admin/ManualSaleModal";
+import { Product } from "@/types";
 
 // Preset Palettes Definition
 const PRESET_PALETTES = [
@@ -221,7 +215,7 @@ export default function AdminPage() {
 
   // Product Add/Edit Form State
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [newCatOpen, setNewCatOpen] = useState(false);
   const [newCatName, setNewCatName] = useState("");
 
@@ -301,17 +295,21 @@ export default function AdminPage() {
 
   // Sync local states
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== "undefined") {
-      setStoreUrl(window.location.origin + "/catalogo");
-    }
+    setTimeout(() => {
+      setMounted(true);
+      if (typeof window !== "undefined") {
+        setStoreUrl(window.location.origin + "/catalogo");
+      }
+    }, 0);
   }, []);
 
   useEffect(() => {
     if (mounted) {
-      setLocalColors({ ...colors });
-      setLocalStore({ ...store });
-      setLocalBanner({ ...banner });
+      setTimeout(() => {
+        setLocalColors({ ...colors });
+        setLocalStore({ ...store });
+        setLocalBanner({ ...banner });
+      }, 0);
     }
   }, [colors, store, banner, mounted]);
 
@@ -404,7 +402,7 @@ export default function AdminPage() {
     setIsProductModalOpen(true);
   };
 
-  const handleOpenEditModal = (product: any) => {
+  const handleOpenEditModal = (product: Product) => {
     setEditingProduct(product);
     setProductForm({
       name: product.name,
@@ -739,7 +737,7 @@ export default function AdminPage() {
     );
   }
 
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&ecc=H&data=${encodeURIComponent(storeUrl)}`;
+
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32 text-zinc-900 font-sans">
@@ -1145,12 +1143,27 @@ export default function AdminPage() {
 
               {/* Products List Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProductsList.length === 0 ? (
+                 {filteredProductsList.length === 0 ? (
                   <div className="col-span-full bg-white border border-dashed border-zinc-300 rounded-[2rem] p-12 text-center text-zinc-400 flex flex-col items-center justify-center gap-4">
                     <ShoppingBag size={48} className="text-zinc-300" />
                     <div>
-                      <p className="text-sm font-black text-zinc-800 uppercase">Sin Coincidencias</p>
-                      <p className="text-xs text-zinc-500 mt-1">Prueba con otra búsqueda o agrega un nuevo producto al catálogo.</p>
+                      <p className="text-sm font-black text-zinc-800 uppercase">
+                        {products.length === 0 ? "Catálogo Vacío" : "Sin Coincidencias"}
+                      </p>
+                      <p className="text-xs text-zinc-500 mt-1">
+                        {products.length === 0 
+                          ? "No tienes productos en tu catálogo de Firebase. Puedes agregar uno nuevo o cargar los de demostración iniciales." 
+                          : "Prueba con otra búsqueda o agrega un nuevo producto al catálogo."}
+                      </p>
+                      {products.length === 0 && (
+                        <button
+                          onClick={handleResetDemoData}
+                          className="mt-4 bg-black text-white hover:bg-zinc-800 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider shadow-md transition-all active:scale-95 flex items-center gap-2 mx-auto cursor-pointer"
+                        >
+                          <RefreshCw size={14} />
+                          Cargar Productos de Demostración
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -1341,7 +1354,7 @@ export default function AdminPage() {
                             <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mr-2">Estado:</span>
                             <select
                               value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                              onChange={(e) => updateOrderStatus(order.id, e.target.value as 'pending' | 'completed' | 'canceled')}
                               className="bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2 text-xs font-bold text-zinc-700 outline-none"
                             >
                               <option value="pending">Pendiente</option>
@@ -1393,7 +1406,7 @@ export default function AdminPage() {
                             {order.notes && (
                               <div className="mt-3 pt-3 border-t border-zinc-200/50">
                                 <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Notas:</p>
-                                <p className="text-xs text-zinc-600 mt-1 italic">"{order.notes}"</p>
+                                <p className="text-xs text-zinc-600 mt-1 italic">&ldquo;{order.notes}&rdquo;</p>
                               </div>
                             )}
                           </div>
@@ -1668,7 +1681,7 @@ export default function AdminPage() {
                     {/* Badge Nuevo */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta "Nuevo"</label>
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta &quot;Nuevo&quot;</label>
                         <span 
                           style={{ 
                             backgroundColor: isValidHex(localColors.badgeNew || "") ? localColors.badgeNew : "#F59E0B",
@@ -1705,7 +1718,7 @@ export default function AdminPage() {
                     {/* Badge Destacado */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta "Destacado"</label>
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta &quot;Destacado&quot;</label>
                         <span 
                           style={{ 
                             backgroundColor: isValidHex(localColors.badgeFeatured || "") ? localColors.badgeFeatured : "#18181B",
@@ -1742,7 +1755,7 @@ export default function AdminPage() {
                     {/* Badge Stock */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta "Stock"</label>
+                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Etiqueta &quot;Stock&quot;</label>
                         <span 
                           style={{ 
                             backgroundColor: isValidHex(localColors.badgeStock || "") ? localColors.badgeStock : "#71717A",
@@ -1980,21 +1993,32 @@ export default function AdminPage() {
                 </section>
 
                 {/* Danger Zone */}
-                <section className="bg-red-50/50 rounded-3xl p-6 border border-red-100 shadow-sm flex items-center justify-between gap-4">
+                <section className="bg-red-50/50 rounded-3xl p-6 border border-red-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-start gap-3">
                     <Info className="text-red-500 mt-0.5 shrink-0" size={20} />
                     <div>
-                      <h4 className="text-sm font-bold text-red-950 uppercase tracking-tight">Restablecer Estética</h4>
-                      <p className="text-[11px] text-red-700">Vuelve a configurar los colores dorados y fotos de demostración por defecto.</p>
+                      <h4 className="text-sm font-bold text-red-950 uppercase tracking-tight">Zona de Peligro</h4>
+                      <p className="text-[11px] text-red-700">Restablece la estética a sus valores originales o recarga los productos iniciales.</p>
                     </div>
                   </div>
-                  <button
-                    onClick={handleResetBranding}
-                    className="flex items-center gap-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 text-xs font-bold transition-all active:scale-95 shadow-md shadow-red-200"
-                  >
-                    <Trash2 size={14} />
-                    Resetear
-                  </button>
+                  <div className="flex flex-wrap gap-2 shrink-0">
+                    <button
+                      onClick={handleResetBranding}
+                      className="flex items-center gap-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 text-xs font-bold transition-all active:scale-95 shadow-md shadow-red-200 cursor-pointer"
+                      title="Restablecer colores y tipografías"
+                    >
+                      <Palette size={14} />
+                      Resetear Estética
+                    </button>
+                    <button
+                      onClick={handleResetDemoData}
+                      className="flex items-center gap-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-900 text-white px-4 py-2.5 text-xs font-bold transition-all active:scale-95 shadow-md shadow-zinc-200 cursor-pointer"
+                      title="Cargar productos de demostración de fábrica"
+                    >
+                      <RefreshCw size={14} />
+                      Resetear Productos
+                    </button>
+                  </div>
                 </section>
 
               </div>
@@ -2535,7 +2559,7 @@ export default function AdminPage() {
                         onChange={(e) => setProductForm(prev => ({ ...prev, isNew: e.target.checked }))}
                         className="w-4 h-4 accent-black rounded border-zinc-300"
                       />
-                      <span className="text-xs font-bold text-zinc-700 uppercase tracking-wide">Marcar como "Nuevo" (Badge)</span>
+                      <span className="text-xs font-bold text-zinc-700 uppercase tracking-wide">Marcar como &quot;Nuevo&quot; (Badge)</span>
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer select-none">

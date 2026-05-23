@@ -43,6 +43,7 @@ import {
 import { useProductStore } from "@/store/useProductStore";
 import { useBannerStore, BannerLayer, BannerFormat, BANNER_FORMATS, PRESET_TEMPLATES } from "@/store/useBannerStore";
 import { formatPrice } from "@/lib/utils";
+import { Product } from "@/types";
 
 // List of Google Fonts to load
 const GOOGLE_FONTS = [
@@ -52,7 +53,6 @@ const GOOGLE_FONTS = [
   { name: "Playfair Display", family: "'Playfair Display', serif" },
   { name: "Inter", family: "Inter, sans-serif" }
 ];
-
 export function BannerDesigner() {
   const { products } = useProductStore();
   const {
@@ -554,10 +554,8 @@ export function BannerDesigner() {
     e.target.value = ""; // Reset
   };
 
-  // Product catalog auto-injector
-  const handleInjectProduct = (prod: any) => {
+  const handleInjectProduct = (prod: Product) => {
     // 1. Add Product Image Layer
-    const imgId = `layer-${Date.now()}-pimg`;
     addLayer({
       type: 'image',
       name: `Foto: ${prod.name.substring(0, 12)}`,

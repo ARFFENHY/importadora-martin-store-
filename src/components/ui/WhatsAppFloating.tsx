@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useConfigStore } from "@/store/useConfigStore";

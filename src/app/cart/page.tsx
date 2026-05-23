@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronLeft, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Info, Truck, Building2, ChevronRight } from "lucide-react";
+import { ChevronLeft, Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck, Building2 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { formatPrice } from "@/lib/utils";
 import { PRODUCTS as STATIC_PRODUCTS } from "@/data/products";
@@ -15,48 +15,21 @@ import { useConfigStore } from "@/store/useConfigStore";
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeItem, getTotal, clearCart } = useCartStore();
-  const [deliveryMethod, setDeliveryMethod] = React.useState<"delivery" | "pickup">("pickup");
+  const [deliveryMethod, setDeliveryMethod] = useState<"delivery" | "pickup">("pickup");
   const { products } = useProductStore();
   const { colors, store } = useConfigStore();
   const [mounted, setMounted] = useState(false);
 
-  const [visibleItems, setVisibleItems] = useState(4);
-
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => {
+      setMounted(true);
+    }, 0);
   }, []);
 
   const displayProducts = mounted ? products : STATIC_PRODUCTS;
   const suggestedProducts = displayProducts
     .filter((p) => !items.find((item) => item.id === p.id))
     .slice(0, 10);
-
-  const isLoopable = suggestedProducts.length > visibleItems;
-  const extendedProducts = isLoopable
-    ? [...suggestedProducts, ...suggestedProducts.slice(0, visibleItems)]
-    : suggestedProducts;
-
-  // Responsive Carousel Widths
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setVisibleItems(1);
-      } else if (window.innerWidth < 1024) {
-        setVisibleItems(2);
-      } else if (window.innerWidth < 1280) {
-        setVisibleItems(3);
-      } else {
-        setVisibleItems(4);
-      }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-
-
-
   if (items.length === 0) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-white">

@@ -33,7 +33,9 @@ export default function ProductPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => {
+      setMounted(true);
+    }, 0);
   }, []);
 
   const displayProducts = mounted ? products : STATIC_PRODUCTS;
@@ -45,7 +47,6 @@ export default function ProductPage() {
 
   const bgNew = colors.badgeNew || "#F59E0B";
   const bgFeatured = colors.badgeFeatured || "#18181B";
-  const bgStock = colors.badgeStock || "#71717A";
 
   if (!product) {
     return (

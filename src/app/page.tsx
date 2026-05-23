@@ -10,7 +10,6 @@ import {
   Zap,
   Star,
   Package,
-  Flame,
   Lock,
   User,
   Eye,
@@ -35,7 +34,9 @@ export default function LandingPage() {
   const [shakeError, setShakeError] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => {
+      setMounted(true);
+    }, 0);
   }, []);
 
   // Si ya está autenticado y abre el modal, redirigir al admin

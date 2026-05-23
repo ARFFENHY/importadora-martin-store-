@@ -36,18 +36,17 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const bgNew = colors.badgeNew || "#F59E0B";
   const bgFeatured = colors.badgeFeatured || "#18181B";
-  const bgStock = colors.badgeStock || "#71717A";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-border p-3 transition-all duration-300 hover:shadow-premium"
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-border p-2 sm:p-3 transition-all duration-300 hover:shadow-premium"
     >
-      <Link href={`/product/${product.id}`} className="flex flex-col gap-3">
+      <Link href={`/product/${product.id}`} className="flex flex-col gap-2 sm:gap-3">
         {/* Product Image */}
-        <div className="relative aspect-square overflow-hidden rounded-xl bg-white border border-border/50">
+        <div className="relative aspect-square overflow-hidden rounded-lg sm:rounded-xl bg-white border border-border/50">
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -58,11 +57,11 @@ export function ProductCard({ product }: ProductCardProps) {
           />
           
           {/* Badges */}
-          <div className="absolute left-2 top-2 flex flex-col gap-1 z-10">
+          <div className="absolute left-1.5 top-1.5 flex flex-col gap-1 z-10 max-w-[85%]">
             {product.isNew && (
               <span 
                 style={{ backgroundColor: bgNew, color: getContrastColor(bgNew) }}
-                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
+                className="rounded px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider shadow-sm w-fit truncate"
               >
                 Nuevo
               </span>
@@ -70,33 +69,19 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.isFeatured && (
               <span 
                 style={{ backgroundColor: bgFeatured, color: getContrastColor(bgFeatured) }}
-                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
+                className="rounded px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider shadow-sm w-fit truncate"
               >
                 Destacado
               </span>
             )}
             {product.discount && (
-              <span className="rounded-full bg-red-600 px-2 py-0.5 text-[9px] font-black text-white uppercase tracking-wider shadow-sm">
+              <span className="rounded bg-red-600 px-1.5 py-0.5 text-[8px] font-extrabold text-white uppercase tracking-wider shadow-sm w-fit">
                 -{product.discount}%
               </span>
             )}
-            {product.stock === 0 ? (
-              <span className="rounded-full bg-red-600 px-2 py-0.5 text-[9px] font-black text-white uppercase tracking-wider shadow-sm">
+            {product.stock === 0 && (
+              <span className="rounded bg-red-600 px-1.5 py-0.5 text-[8px] font-extrabold text-white uppercase tracking-wider shadow-sm w-fit">
                 Sin Stock
-              </span>
-            ) : product.stock !== undefined ? (
-              <span 
-                style={{ backgroundColor: bgStock, color: getContrastColor(bgStock) }}
-                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
-              >
-                Stock: {product.stock}
-              </span>
-            ) : (
-              <span 
-                style={{ backgroundColor: bgStock, color: getContrastColor(bgStock) }}
-                className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm"
-              >
-                Stock: Ilimitado
               </span>
             )}
           </div>
@@ -122,9 +107,14 @@ export function ProductCard({ product }: ProductCardProps) {
                 </span>
               )}
             </div>
-            {product.stock !== undefined && product.stock > 0 && product.stock <= 2 && (
-              <p className="text-[10px] font-bold text-amber-600 mt-1">
-                ¡Últimas {product.stock} unidades!
+            {product.stock !== undefined && product.stock > 0 && (
+              <p className={`text-[10px] font-bold mt-1 ${product.stock <= 3 ? "text-amber-600" : "text-zinc-400"}`}>
+                {product.stock <= 3 ? `¡Últimas ${product.stock} unidades!` : `Stock: ${product.stock} u.`}
+              </p>
+            )}
+            {product.stock === undefined && (
+              <p className="text-[10px] font-bold text-zinc-400 mt-1">
+                Stock disponible
               </p>
             )}
           </div>

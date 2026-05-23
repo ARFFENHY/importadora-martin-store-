@@ -34,31 +34,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
     const productsRef = collection(db, 'products');
     const categoriesRef = collection(db, 'categories');
 
-    // Products listener with auto-seed
-    const unsubProducts = onSnapshot(productsRef, async (snapshot) => {
-      if (snapshot.empty) {
-        // Firestore vacío → sembrar con productos por defecto
-        const batch = writeBatch(db);
-        INITIAL_PRODUCTS.forEach((product) => {
-          batch.set(doc(productsRef, product.id), product);
-        });
-        await batch.commit();
-        return;
-      }
+    // Products listener (no auto-seed)
+    const unsubProducts = onSnapshot(productsRef, (snapshot) => {
       const products = snapshot.docs.map((d) => ({ ...d.data(), id: d.id } as Product));
       set({ products, isLoading: false });
     });
 
-    // Categories listener with auto-seed
-    const unsubCategories = onSnapshot(categoriesRef, async (snapshot) => {
-      if (snapshot.empty) {
-        const batch = writeBatch(db);
-        INITIAL_CATEGORIES.forEach((cat) => {
-          batch.set(doc(categoriesRef, cat.id), cat);
-        });
-        await batch.commit();
-        return;
-      }
+    // Categories listener (no auto-seed)
+    const unsubCategories = onSnapshot(categoriesRef, (snapshot) => {
       const categories = snapshot.docs.map((d) => ({ ...d.data(), id: d.id } as Category));
       set({ categories });
     });
@@ -128,7 +111,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   },
 
   resetProductsToDefault: async () => {
-    const { products } = get();
+    const { products, categories } = get();
     const batch = writeBatch(db);
 
     // Eliminar todos los productos actuales
@@ -139,6 +122,16 @@ export const useProductStore = create<ProductState>((set, get) => ({
     // Agregar los productos por defecto
     INITIAL_PRODUCTS.forEach((p) => {
       batch.set(doc(db, 'products', p.id), p);
+    });
+
+    // Eliminar todas las categorías actuales
+    categories.forEach((c) => {
+      batch.delete(doc(db, 'categories', c.id));
+    });
+
+    // Agregar las categorías por defecto
+    INITIAL_CATEGORIES.forEach((c) => {
+      batch.set(doc(db, 'categories', c.id), c);
     });
 
     await batch.commit();
