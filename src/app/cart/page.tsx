@@ -28,8 +28,7 @@ export default function CartPage() {
 
   const displayProducts = mounted ? products : STATIC_PRODUCTS;
   const suggestedProducts = displayProducts
-    .filter((p) => !items.find((item) => item.id === p.id))
-    .slice(0, 10);
+    .filter((p) => !items.find((item) => item.id === p.id));
   if (items.length === 0) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-white">
