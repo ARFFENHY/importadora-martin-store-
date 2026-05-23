@@ -30,7 +30,7 @@ export function CartFloating() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => router.push("/cart")}
-        className="fixed bottom-[10.5rem] right-6 z-[100] flex h-16 w-16 items-center justify-center rounded-full bg-black text-white shadow-lg shadow-black/35 md:bottom-28 cursor-pointer"
+        className="fixed bottom-24 right-6 z-[100] flex h-16 w-16 items-center justify-center rounded-full bg-black text-white shadow-lg shadow-black/35 md:bottom-10 cursor-pointer"
         aria-label="Ver Carrito"
       >
         <ShoppingCart size={26} className="text-white relative z-10" />
