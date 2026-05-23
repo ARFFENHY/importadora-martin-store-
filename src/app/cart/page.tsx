@@ -315,7 +315,7 @@ export default function CartPage() {
               transition={{ 
                 repeat: Infinity, 
                 ease: "linear", 
-                duration: suggestedProducts.length * 3 // Adjust duration based on number of products
+                duration: suggestedProducts.length * 1.2 // Make it twice as fast for a more dynamic and premium feel
               }}
             >
               {[...suggestedProducts, ...suggestedProducts, ...suggestedProducts].map((product, idx) => (
