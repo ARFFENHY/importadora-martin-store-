@@ -11,11 +11,10 @@ export function WhatsAppFloating() {
   const phoneNumber = store.whatsAppNumber;
   const message = "Hola! Vengo desde el catálogo online y tengo una consulta.";
   
-  // Show WhatsApp floating icon only on catalog-related pages (catalog, product details, cart, checkout)
+  // Show WhatsApp floating icon only on catalog-related pages (catalog, product details, checkout)
   const showWhatsApp =
     pathname.startsWith("/catalogo") ||
     pathname.startsWith("/product") ||
-    pathname.startsWith("/cart") ||
     pathname.startsWith("/checkout");
 
   if (!showWhatsApp) {
@@ -34,7 +33,7 @@ export function WhatsAppFloating() {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={handleClick}
-      className="fixed bottom-[10.5rem] right-6 z-[100] flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-green-500/30 md:bottom-28"
+      className="fixed bottom-24 right-6 z-[100] flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-green-500/30 md:bottom-10"
       aria-label="Contactar por WhatsApp"
     >
       <svg 
