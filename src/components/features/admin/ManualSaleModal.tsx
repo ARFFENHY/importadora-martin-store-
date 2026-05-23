@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useProductStore, type Product } from '@/store/useProductStore';
 import { useOrderStore } from '@/store/useOrderStore';
-import { X, Plus, Minus, Search, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, Search, ShoppingBag, Trash2 } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -48,6 +48,10 @@ export function ManualSaleModal({ onClose, onSuccess }: ManualSaleModalProps) {
       }
       return item;
     }).filter(item => item.quantity > 0));
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart(prev => prev.filter(item => item.product.id !== productId));
   };
 
   const total = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
@@ -192,7 +196,16 @@ export function ManualSaleModal({ onClose, onSuccess }: ManualSaleModalProps) {
                       <p className="text-[10px] text-zinc-500 mt-0.5">{formatPrice(item.product.price)} c/u</p>
                     </div>
                     <div className="flex flex-col items-end gap-2 shrink-0">
-                      <p className="text-sm font-black">{formatPrice(item.product.price * item.quantity)}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-sm font-black">{formatPrice(item.product.price * item.quantity)}</p>
+                        <button 
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                          title="Eliminar producto"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                       <div className="flex items-center gap-2 bg-zinc-100 rounded-lg p-1">
                         <button 
                           onClick={() => updateQuantity(item.product.id, -1)}
