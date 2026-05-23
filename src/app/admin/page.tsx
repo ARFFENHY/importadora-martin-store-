@@ -511,8 +511,7 @@ export default function AdminPage() {
       setTimeout(() => setProductToast(null), 3000);
     } catch (error) {
       console.error("Error downloading QR:", error);
-      window.open(qrUrl, '_blank');
-      setProductToast("QR abierto en nueva pestaña");
+      setProductToast("Error al descargar el QR.");
       setTimeout(() => setProductToast(null), 3000);
     }
   };
@@ -2224,7 +2223,7 @@ export default function AdminPage() {
                     />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-[3px] border-white z-20 overflow-hidden">
                       <img 
-                        src={store.logoUrl || "/icon.jpg"}
+                        src={store.logoUrl ? `/api/image-proxy?url=${encodeURIComponent(store.logoUrl)}` : "/icon.jpg"}
                         alt="Logo"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover"

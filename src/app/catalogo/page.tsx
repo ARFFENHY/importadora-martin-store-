@@ -120,7 +120,13 @@ export default function CatalogoPage() {
               <p className="text-xs md:text-sm text-zinc-300">
                 {banner.subtitle}
               </p>
-              <button className="mt-2 flex w-fit items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-bold text-black transition-transform active:scale-95 shadow-xl hover:bg-zinc-100">
+              <button 
+                onClick={() => {
+                  const el = document.getElementById("novedades");
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="mt-2 flex w-fit items-center gap-2 rounded-xl bg-white px-6 py-3 text-xs font-bold text-black transition-transform active:scale-95 shadow-xl hover:bg-zinc-100"
+              >
                 Explorar Ahora
                 <ArrowRight size={16} />
               </button>
@@ -171,7 +177,7 @@ export default function CatalogoPage() {
             </section>
 
             {/* Sección: Novedades (Scroll Horizontal en Mobile) */}
-            <section className="mt-16 bg-zinc-50 -mx-6 px-6 py-12 border-y border-border">
+            <section id="novedades" className="mt-16 bg-zinc-50 -mx-6 px-6 py-12 border-y border-border">
               <div className="flex items-center justify-between mb-8 px-2">
                 <div className="flex flex-col">
                   <h3 className="text-xl font-black text-foreground uppercase tracking-tighter flex items-center gap-2">
