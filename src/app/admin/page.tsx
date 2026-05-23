@@ -2308,17 +2308,15 @@ export default function AdminPage() {
                       className="rounded-lg relative"
                       unoptimized
                     />
-                    {store.logoUrl && (
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-[3px] border-white z-20 overflow-hidden">
-                        <Image 
-                          src={store.logoUrl}
-                          alt="Logo"
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      </div>
-                    )}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-[3px] border-white z-20 overflow-hidden">
+                      <Image 
+                        src={store.logoUrl || "/icon.jpg"}
+                        alt="Logo"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
                   </div>
 
                   <div className="relative z-10 w-full space-y-4">
