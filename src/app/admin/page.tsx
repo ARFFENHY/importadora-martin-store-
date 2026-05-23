@@ -52,6 +52,7 @@ import { formatPrice } from "@/lib/utils";
 import Image from "next/image";
 import { BannerDesigner } from "@/components/features/designer/BannerDesigner";
 import { StoreQRCode } from "@/components/ui/StoreQRCode";
+import { ManualSaleModal } from "@/components/features/admin/ManualSaleModal";
 
 // Preset Palettes Definition
 const PRESET_PALETTES = [
@@ -199,6 +200,7 @@ export default function AdminPage() {
   // Navigation State
   const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "branding" | "share" | "security" | "designer">("overview");
   const [selectedPeriod, setSelectedPeriod] = useState<"today" | "week" | "month" | "all">("all");
+  const [isManualSaleOpen, setIsManualSaleOpen] = useState(false);
 
   // Hydration state
   const [mounted, setMounted] = useState(false);
@@ -1003,62 +1005,21 @@ export default function AdminPage() {
               {/* Main Panel grid */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
-                {/* QR / Sharing Quick Card */}
-                <div className="lg:col-span-5 bg-white border border-zinc-200 rounded-[2.5rem] p-8 shadow-sm flex flex-col items-center justify-between text-center min-h-[480px]">
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Compartir Catálogo</span>
-                    <h3 className="text-xl font-black uppercase tracking-tight">Tu Tienda Digital</h3>
-                    <p className="text-xs text-zinc-500 max-w-[280px]">Los usuarios pueden ver tus ofertas y enviarte pedidos directamente a tu WhatsApp.</p>
+                {/* Quick Action: Venta Manual */}
+                <div className="lg:col-span-5 bg-white border border-zinc-200 rounded-[2.5rem] p-8 shadow-sm flex flex-col items-center justify-center text-center min-h-[480px]">
+                  <div className="h-20 w-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+                    <Plus size={40} strokeWidth={3} />
                   </div>
-
-                  <div className="my-6 bg-zinc-50 p-4 rounded-3xl border border-zinc-100 shadow-inner flex items-center justify-center aspect-square w-56 relative group">
-                    <Image 
-                      src={qrUrl}
-                      alt="QR Code"
-                      width={200}
-                      height={200}
-                      className="rounded-2xl transition-transform duration-300 group-hover:scale-105"
-                      unoptimized
-                    />
-                  </div>
-
-                  <div className="w-full space-y-4">
-                    <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3 font-mono text-[11px] text-zinc-600 select-all overflow-hidden text-ellipsis flex items-center justify-between gap-2">
-                      <span className="truncate">{storeUrl}</span>
-                      <button 
-                        onClick={handleCopyLink}
-                        className="shrink-0 p-2 hover:bg-zinc-200 active:scale-95 transition-all text-zinc-800 rounded-xl bg-white border"
-                      >
-                        {linkCopied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
-                      </button>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={handleCopyLink}
-                        className="flex-1 bg-black text-white hover:bg-zinc-800 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md flex items-center justify-center gap-2"
-                      >
-                        {linkCopied ? (
-                          <>
-                            <Check size={16} />
-                            Enlace Copiado
-                          </>
-                        ) : (
-                          <>
-                            <Copy size={16} />
-                            Copiar Enlace
-                          </>
-                        )}
-                      </button>
-                      <button 
-                        onClick={handleShareQR}
-                        className="flex-1 border-2 border-black hover:bg-zinc-50 text-black py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        <Share2 size={16} />
-                        Compartir QR
-                      </button>
-                    </div>
-                  </div>
+                  <h3 className="text-xl font-black uppercase tracking-tight mb-2">Cargar Venta Manual</h3>
+                  <p className="text-xs text-zinc-500 max-w-[240px] mb-8">
+                    Registrá una compra que hiciste por fuera de la web (mostrador o redes) para mantener tu stock y ganancias al día.
+                  </p>
+                  <button
+                    onClick={() => setIsManualSaleOpen(true)}
+                    className="bg-black text-white hover:bg-zinc-800 py-4 px-8 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md flex items-center justify-center gap-2"
+                  >
+                    Nueva Venta Manual
+                  </button>
                 </div>
 
                 {/* Dashboard Summary lists / Pending orders */}
@@ -2936,6 +2897,17 @@ export default function AdminPage() {
         )}
       </AnimatePresence>
 
+      {/* Manual Sale Modal */}
+      {isManualSaleOpen && (
+        <ManualSaleModal 
+          onClose={() => setIsManualSaleOpen(false)}
+          onSuccess={() => {
+            setIsManualSaleOpen(false);
+            setProductToast("Venta manual registrada exitosamente");
+            setTimeout(() => setProductToast(null), 3000);
+          }}
+        />
+      )}
     </div>
   );
 }
