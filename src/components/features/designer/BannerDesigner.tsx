@@ -90,6 +90,11 @@ export function BannerDesigner() {
   const [editorHeight, setEditorHeight] = useState(360);
   const [replacingLayerId, setReplacingLayerId] = useState<string | null>(null);
   
+  // Custom Product splitting states
+  const [isSplitProductModalOpen, setIsSplitProductModalOpen] = useState(false);
+  const [splitProductName, setSplitProductName] = useState("");
+  const [splitProductPrice, setSplitProductPrice] = useState("");
+  
   // Custom font loading hook
   useEffect(() => {
     const link = document.createElement("link");
@@ -110,6 +115,8 @@ export function BannerDesigner() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonFileInputRef = useRef<HTMLInputElement>(null);
+  const splitProductFileInputRef = useRef<HTMLInputElement>(null);
 
   // Drag and drop state variables
   const dragInfoRef = useRef<{
@@ -558,6 +565,120 @@ export function BannerDesigner() {
     setIsSidebarOpen(false);
   };
 
+  const handleJsonFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (parsed && Array.isArray(parsed.layers)) {
+          const cloned = {
+            ...parsed,
+            id: `design-${Date.now()}`,
+            name: `${parsed.name || "Proyecto Importado"}`,
+            updatedAt: Date.now(),
+            layers: parsed.layers.map((l: BannerLayer) => ({
+              ...l,
+              id: `layer-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
+            }))
+          };
+          updateCurrentDesign(cloned);
+          setSaveToast("¡Proyecto importado y dividido en capas!");
+          setTimeout(() => setSaveToast(null), 3000);
+          setIsSidebarOpen(false);
+        } else {
+          alert("El archivo de proyecto JSON no es válido.");
+        }
+      } catch (err) {
+        console.error("Error parsing JSON project", err);
+        alert("Error al leer el archivo del proyecto.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ""; // Reset
+  };
+
+  const handleSplitProductClick = () => {
+    setIsSplitProductModalOpen(true);
+  };
+
+  const handleSplitProductSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!splitProductName) {
+      alert("Por favor ingresa el nombre del producto.");
+      return;
+    }
+    splitProductFileInputRef.current?.click();
+  };
+
+  const handleSplitProductFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl && currentDesign) {
+        addLayer({
+          type: 'image',
+          name: `Foto: ${splitProductName.substring(0, 12)}`,
+          x: 25,
+          y: 32,
+          width: 50,
+          height: 48,
+          rotation: 0,
+          opacity: 1,
+          src: dataUrl
+        });
+
+        addLayer({
+          type: 'text',
+          name: `Nombre: ${splitProductName.substring(0, 12)}`,
+          x: 10,
+          y: 18,
+          width: 80,
+          height: 6,
+          rotation: 0,
+          opacity: 1,
+          text: splitProductName.toUpperCase(),
+          fontSize: 48,
+          fontFamily: 'Montserrat',
+          color: currentDesign.background.value === '#ffffff' ? '#000000' : '#ffffff',
+          align: 'center',
+          fontWeight: 'bold'
+        });
+
+        const priceNum = parseFloat(splitProductPrice) || 0;
+        addLayer({
+          type: 'text',
+          name: `Precio: ${splitProductName.substring(0, 12)}`,
+          x: 20,
+          y: 81,
+          width: 60,
+          height: 8,
+          rotation: 0,
+          opacity: 1,
+          text: formatPrice(priceNum),
+          fontSize: 78,
+          fontFamily: 'Outfit',
+          color: '#10B981',
+          align: 'center',
+          fontWeight: '900'
+        });
+
+        setIsSplitProductModalOpen(false);
+        setSplitProductName("");
+        setSplitProductPrice("");
+        setIsSidebarOpen(false);
+        setTimeout(() => selectLayer(null), 300);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ""; // Reset
+  };
+
   const handleInjectProduct = (prod: Product) => {
     // 1. Add Product Image Layer
     addLayer({
@@ -647,7 +768,20 @@ export function BannerDesigner() {
   };
 
   // High Resolution Render & Export Core
-  const handleExport = async (format: 'png' | 'jpg' | 'pdf') => {
+  const handleExport = async (format: 'png' | 'jpg' | 'pdf' | 'json') => {
+    if (format === 'json') {
+      if (!currentDesign) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentDesign, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `${currentDesign.name.toLowerCase().split(' ').join('_')}_proyecto.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      setExportMenuOpen(false);
+      return;
+    }
+
     setIsExporting(true);
     setExportMenuOpen(false);
 
@@ -1210,6 +1344,25 @@ export function BannerDesigner() {
                     </div>
                   )}
                 </div>
+
+                <div className="border-t border-zinc-200 pt-4 mt-2">
+                  <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider mb-2">Importar Proyecto</h3>
+                  <div 
+                    onClick={() => jsonFileInputRef.current?.click()}
+                    className="border-2 border-dashed border-zinc-200 hover:border-amber-400 rounded-xl p-4 text-center cursor-pointer hover:bg-zinc-50 transition-all flex flex-col items-center justify-center gap-1 group"
+                  >
+                    <Upload className="h-5 w-5 text-zinc-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-bold text-zinc-600">Cargar Proyecto (.json)</span>
+                    <span className="text-[9px] text-zinc-400 font-medium">Reconstruye el diseño en capas editables</span>
+                  </div>
+                  <input 
+                    type="file" 
+                    ref={jsonFileInputRef} 
+                    onChange={handleJsonFileChange} 
+                    accept=".json" 
+                    className="hidden" 
+                  />
+                </div>
               </motion.div>
             )}
 
@@ -1402,14 +1555,29 @@ export function BannerDesigner() {
                 exit={{ opacity: 0 }}
                 className="space-y-4"
               >
-                <h4 className="text-xs font-black uppercase text-zinc-400 tracking-wider">Subir tus logos / imágenes</h4>
-                <div 
-                  onClick={handleImageUploadClick}
-                  className="border-2 border-dashed border-zinc-300 hover:border-amber-400 rounded-2xl p-6 text-center cursor-pointer hover:bg-zinc-50 transition-all flex flex-col items-center justify-center gap-2"
-                >
-                  <Upload className="h-8 w-8 text-zinc-400 animate-bounce" />
-                  <span className="text-xs font-bold text-zinc-600">Cargar Archivo</span>
-                  <span className="text-[10px] text-zinc-400 font-medium">Soporta PNG, JPG</span>
+                <div>
+                  <h4 className="text-xs font-black uppercase text-zinc-400 tracking-wider mb-2.5">Subir tus logos / imágenes</h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    {/* Standard Image upload */}
+                    <div 
+                      onClick={handleImageUploadClick}
+                      className="border-2 border-dashed border-zinc-200 hover:border-amber-400 rounded-2xl p-5 text-center cursor-pointer hover:bg-zinc-50 transition-all flex flex-col items-center justify-center gap-2 group"
+                    >
+                      <Upload className="h-6 w-6 text-zinc-400 group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold text-zinc-700">Cargar Imagen Suelta</span>
+                      <span className="text-[9px] text-zinc-400 font-medium">Agrega un elemento plano al canvas</span>
+                    </div>
+
+                    {/* Split Product image upload */}
+                    <div 
+                      onClick={handleSplitProductClick}
+                      className="border-2 border-dashed border-amber-300 bg-amber-50/5 hover:border-amber-500 rounded-2xl p-5 text-center cursor-pointer hover:bg-amber-50/20 transition-all flex flex-col items-center justify-center gap-2 group"
+                    >
+                      <Sparkles className="h-6 w-6 text-amber-500 animate-pulse group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold text-amber-800">Cargar y Dividir como Producto</span>
+                      <span className="text-[9px] text-amber-600/80 font-medium">Crea automáticamente capas de Foto, Nombre y Precio</span>
+                    </div>
+                  </div>
                 </div>
                 <input 
                   type="file" 
@@ -1561,7 +1729,7 @@ export function BannerDesigner() {
             {/* Save Button */}
             <button
               onClick={handleSaveBtn}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-black uppercase text-white shadow-sm hover:shadow active:scale-[0.98] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black hover:bg-zinc-800 text-xs font-black uppercase text-white shadow-sm hover:shadow active:scale-[0.98] transition-all cursor-pointer"
             >
               <Save size={14} />
               Guardar
@@ -1603,10 +1771,17 @@ export function BannerDesigner() {
                       </button>
                       <button
                         onClick={() => handleExport("pdf")}
-                        className="flex items-center gap-2.5 w-full text-left p-2.5 hover:bg-zinc-50 text-xs font-bold text-zinc-700 rounded-xl cursor-pointer transition-all border-t border-zinc-100"
+                        className="flex items-center gap-2.5 w-full text-left p-2.5 hover:bg-zinc-50 text-xs font-bold text-zinc-700 rounded-xl cursor-pointer transition-all border-y border-zinc-100"
                       >
                         <FileDown size={14} className="text-zinc-400" />
                         Imprimir / Guardar PDF
+                      </button>
+                      <button
+                        onClick={() => handleExport("json")}
+                        className="flex items-center gap-2.5 w-full text-left p-2.5 hover:bg-amber-50/50 text-xs font-bold text-amber-800 rounded-xl cursor-pointer transition-all"
+                      >
+                        <Layers size={14} className="text-amber-500" />
+                        Exportar Proyecto (.json)
                       </button>
                     </motion.div>
                   </>
@@ -2047,6 +2222,93 @@ export function BannerDesigner() {
               </p>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Product Layer Splitting Modal */}
+      <AnimatePresence>
+        {isSplitProductModalOpen && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 rounded-3xl p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white rounded-3xl p-6 shadow-2xl max-w-sm w-full border border-zinc-200 relative"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setIsSplitProductModalOpen(false)}
+                className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg cursor-pointer transition-all"
+              >
+                <X size={16} />
+              </button>
+
+              <div className="mb-4">
+                <h4 className="text-sm font-black uppercase text-zinc-800 tracking-wider flex items-center gap-2">
+                  <Sparkles size={16} className="text-amber-500" />
+                  Dividir en Capas de Producto
+                </h4>
+                <p className="text-[10px] text-zinc-400 font-medium mt-1 leading-relaxed">
+                  Ingresa los detalles del producto. Al subir la imagen, el diseñador creará automáticamente capas separadas y editables para la Foto, el Título y el Precio.
+                </p>
+              </div>
+
+              <form onSubmit={handleSplitProductSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                    Nombre del Producto
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={splitProductName}
+                    onChange={(e) => setSplitProductName(e.target.value)}
+                    placeholder="Ej: Taladro Percutor Dahiatsu 20v"
+                    className="w-full text-xs font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                    Precio ($)
+                  </label>
+                  <input
+                    type="number"
+                    value={splitProductPrice}
+                    onChange={(e) => setSplitProductPrice(e.target.value)}
+                    placeholder="Ej: 89000"
+                    className="w-full text-xs font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white"
+                  />
+                </div>
+
+                <div className="flex gap-2.5 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsSplitProductModalOpen(false)}
+                    className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer text-center"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-black text-white hover:bg-zinc-800 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer text-center shadow-md active:scale-95"
+                  >
+                    Subir Imagen
+                  </button>
+                </div>
+              </form>
+
+              {/* Hidden file input for split product uploading */}
+              <input
+                type="file"
+                ref={splitProductFileInputRef}
+                onChange={handleSplitProductFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
