@@ -13,11 +13,15 @@ interface QuoteItem {
   product: Product;
   quantity: number;
   price: number; // Editable price override
+  discountPercent: number; // Item discount %
 }
 
 export function QuoteBuilder() {
   const { products } = useProductStore();
   const { store } = useConfigStore();
+  
+  // Document Title / Type State
+  const [documentTitle, setDocumentTitle] = useState("PRESUPUESTO");
   
   // Client Info State
   const [clientName, setClientName] = useState("");
@@ -45,6 +49,7 @@ export function QuoteBuilder() {
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedQty, setSelectedQty] = useState(1);
   const [priceOverride, setPriceOverride] = useState<number | string>("");
+  const [itemDiscount, setItemDiscount] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -100,6 +105,7 @@ export function QuoteBuilder() {
       updated[existingIndex].quantity += selectedQty;
       // Keep the new price override
       updated[existingIndex].price = finalPrice;
+      updated[existingIndex].discountPercent = itemDiscount;
       setItems(updated);
     } else {
       const newItem: QuoteItem = {
@@ -107,6 +113,7 @@ export function QuoteBuilder() {
         product: prod,
         quantity: selectedQty,
         price: finalPrice,
+        discountPercent: itemDiscount,
       };
       setItems([...items, newItem]);
     }
@@ -115,6 +122,7 @@ export function QuoteBuilder() {
     setSelectedProductId("");
     setSelectedQty(1);
     setPriceOverride("");
+    setItemDiscount(0);
     setSearchTerm("");
   };
 
@@ -125,7 +133,7 @@ export function QuoteBuilder() {
 
   // Calculate Subtotal
   const getSubtotal = () => {
-    return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return items.reduce((sum, item) => sum + (item.price * (1 - item.discountPercent / 100)) * item.quantity, 0);
   };
 
   // Calculate Discount Amount
@@ -204,6 +212,18 @@ export function QuoteBuilder() {
           </div>
 
           <div className="space-y-4">
+            {/* Document Title Customizer */}
+            <div className="space-y-1">
+              <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Título del Documento</label>
+              <input
+                type="text"
+                placeholder="Ej. PRESUPUESTO, COTIZACIÓN, COTIZACIÓN PARA..."
+                value={documentTitle}
+                onChange={(e) => setDocumentTitle(e.target.value)}
+                className="w-full text-xs font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white"
+              />
+            </div>
+
             {/* Quote details */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -329,26 +349,38 @@ export function QuoteBuilder() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Precio Unitario ($)</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Precio ($)</label>
                 <input
                   type="number"
                   value={priceOverride}
                   onChange={(e) => setPriceOverride(e.target.value)}
-                  placeholder="Precio sugerido"
+                  placeholder="Precio"
                   disabled={!selectedProductId}
-                  className="w-full text-xs font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-[11px] font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Cantidad</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Desc. (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={itemDiscount}
+                  onChange={(e) => setItemDiscount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
+                  disabled={!selectedProductId}
+                  className="w-full text-[11px] font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Cant.</label>
                 <input
                   type="number"
                   min="1"
                   value={selectedQty}
                   onChange={(e) => setSelectedQty(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full text-xs font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white"
+                  className="w-full text-[11px] font-bold bg-zinc-50 border border-zinc-200 rounded-xl px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white"
                 />
               </div>
             </div>
@@ -485,8 +517,8 @@ export function QuoteBuilder() {
               <div className="flex flex-row justify-between items-start border-b border-zinc-200 pb-6 gap-4">
                 {/* Store logo & brand metadata */}
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-2xl overflow-hidden border border-zinc-200 bg-white flex items-center justify-center shrink-0 shadow-2xs bg-white">
-                    <img src={store.logoUrl || "/logo.png"} alt="Store logo" className="h-full w-full object-contain p-1" />
+                  <div className="h-16 w-16 rounded-full overflow-hidden border border-zinc-200 bg-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <img src={store.logoUrl || "/logo.png"} alt="Store logo" className="h-full w-full object-cover" />
                   </div>
                   <div>
                     <h1 className="text-xl font-black tracking-tight text-zinc-900 uppercase">
@@ -501,8 +533,8 @@ export function QuoteBuilder() {
 
                 {/* Document Type Label & Number */}
                 <div className="text-right flex flex-col items-end">
-                  <span className="text-sm font-black text-white bg-zinc-900 px-3 py-1 rounded-md uppercase tracking-wider shadow-sm mb-2">
-                    PRESUPUESTO
+                  <span className="text-sm font-black text-white bg-zinc-900 px-3 py-1 rounded-md uppercase tracking-wider shadow-sm mb-2 max-w-[250px] break-words text-right">
+                    {documentTitle || "PRESUPUESTO"}
                   </span>
                   <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Número de Documento</p>
                   <p className="text-base font-black text-zinc-900 mt-0.5">{quoteNumber || "PRE-000000"}</p>
@@ -558,15 +590,16 @@ export function QuoteBuilder() {
                   <thead>
                     <tr className="border-b border-zinc-300 text-[10px] font-black uppercase text-zinc-500 tracking-wider">
                       <th className="py-2.5 pb-2">Descripción / Detalle</th>
-                      <th className="py-2.5 pb-2 text-center w-16">Cant.</th>
-                      <th className="py-2.5 pb-2 text-right w-28">P. Unitario</th>
-                      <th className="py-2.5 pb-2 text-right w-28">Subtotal</th>
+                      <th className="py-2.5 pb-2 text-center w-12">Cant.</th>
+                      <th className="py-2.5 pb-2 text-right w-24">P. Unitario</th>
+                      <th className="py-2.5 pb-2 text-center w-16">Desc.</th>
+                      <th className="py-2.5 pb-2 text-right w-24">Subtotal</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-12 text-center font-medium text-zinc-400 italic">
+                        <td colSpan={5} className="py-12 text-center font-medium text-zinc-400 italic">
                           No hay ítems cargados en el presupuesto. Agrega herramientas usando el panel de la izquierda.
                         </td>
                       </tr>
@@ -579,7 +612,12 @@ export function QuoteBuilder() {
                           </td>
                           <td className="py-3 text-center font-bold text-zinc-900">{item.quantity}</td>
                           <td className="py-3 text-right text-zinc-700">{formatPrice(item.price)}</td>
-                          <td className="py-3 text-right font-bold text-zinc-900">{formatPrice(item.price * item.quantity)}</td>
+                          <td className="py-3 text-center font-bold text-green-600">
+                            {item.discountPercent > 0 ? `${item.discountPercent}%` : "-"}
+                          </td>
+                          <td className="py-3 text-right font-bold text-zinc-900">
+                            {formatPrice((item.price * (1 - item.discountPercent / 100)) * item.quantity)}
+                          </td>
                         </tr>
                       ))
                     )}
@@ -651,6 +689,9 @@ export function QuoteBuilder() {
                 {items.map((item) => (
                   <div key={item.id} className="h-8 pl-3.5 pr-2 bg-white rounded-xl border border-zinc-200 text-[10px] font-bold text-zinc-600 flex items-center gap-1.5 shadow-2xs">
                     <span className="truncate max-w-[80px]">{item.product.name}</span>
+                    {item.discountPercent > 0 && (
+                      <span className="bg-green-50 text-green-700 px-1 py-0.5 rounded text-[8px] font-black">-{item.discountPercent}%</span>
+                    )}
                     <span className="bg-zinc-100 text-zinc-900 px-1.5 py-0.5 rounded font-black">x{item.quantity}</span>
                     <button
                       onClick={() => handleDeleteItem(item.id)}
