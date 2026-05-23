@@ -291,11 +291,7 @@ export function BottomNav() {
                     
                     <div className="flex items-center gap-4 relative z-10">
                       <div className="h-16 w-16 rounded-2xl overflow-hidden bg-white border border-white/20 shadow-lg shrink-0 flex items-center justify-center">
-                        {store.logoUrl ? (
-                          <img src={store.logoUrl} alt="Logo" className="w-full h-full object-cover" />
-                        ) : (
-                          <img src="/icon.jpg" alt="Logo" className="w-full h-full object-cover" />
-                        )}
+                        <img src={store.logoUrl || "/logo.png"} alt="Logo" className="w-full h-full object-cover" />
                       </div>
                       <div className="min-w-0">
                         <h5 className="text-base font-black uppercase tracking-tight truncate leading-tight">{store.name}</h5>

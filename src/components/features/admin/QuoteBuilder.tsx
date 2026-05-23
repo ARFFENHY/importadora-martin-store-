@@ -485,15 +485,9 @@ export function QuoteBuilder() {
               <div className="flex flex-row justify-between items-start border-b border-zinc-200 pb-6 gap-4">
                 {/* Store logo & brand metadata */}
                 <div className="flex items-center gap-4">
-                  {store.logoUrl ? (
-                    <div className="h-16 w-16 rounded-2xl overflow-hidden border border-zinc-200 bg-white flex items-center justify-center shrink-0 shadow-2xs">
-                      <img src={store.logoUrl} alt="Store logo" className="h-full w-full object-contain p-1" />
-                    </div>
-                  ) : (
-                    <div className="h-16 w-16 rounded-2xl bg-zinc-900 text-white flex items-center justify-center text-xl font-black shrink-0 shadow-sm border border-zinc-800">
-                      🛠️
-                    </div>
-                  )}
+                  <div className="h-16 w-16 rounded-2xl overflow-hidden border border-zinc-200 bg-white flex items-center justify-center shrink-0 shadow-2xs bg-white">
+                    <img src={store.logoUrl || "/logo.png"} alt="Store logo" className="h-full w-full object-contain p-1" />
+                  </div>
                   <div>
                     <h1 className="text-xl font-black tracking-tight text-zinc-900 uppercase">
                       {store.name || "IMPORTADORA MARTIN STORE"}
