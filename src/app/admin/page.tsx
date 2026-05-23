@@ -36,7 +36,8 @@ import {
   EyeOff,
   Camera,
   Upload,
-  Folder
+  Folder,
+  FileText
 } from "lucide-react";
 import { useConfigStore, ColorsConfig } from "@/store/useConfigStore";
 import { useProductStore } from "@/store/useProductStore";
@@ -47,6 +48,7 @@ import Image from "next/image";
 import { QRCodeCanvas } from "qrcode.react";
 import { BannerDesigner } from "@/components/features/designer/BannerDesigner";
 import { ManualSaleModal } from "@/components/features/admin/ManualSaleModal";
+import { QuoteBuilder } from "@/components/features/admin/QuoteBuilder";
 import { Product } from "@/types";
 
 // Preset Palettes Definition
@@ -193,7 +195,7 @@ export default function AdminPage() {
   };
 
   // Navigation State
-  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "branding" | "share" | "security" | "designer">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "branding" | "share" | "security" | "designer" | "quotes">("overview");
   const [selectedPeriod, setSelectedPeriod] = useState<"today" | "week" | "month" | "all">("all");
   const [isManualSaleOpen, setIsManualSaleOpen] = useState(false);
 
@@ -877,6 +879,15 @@ export default function AdminPage() {
           >
             <KeyRound size={16} />
             Seguridad
+          </button>
+          <button
+            onClick={() => setActiveTab("quotes")}
+            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+              activeTab === "quotes" ? "bg-black text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50"
+            }`}
+          >
+            <FileText size={16} className="text-amber-500" />
+            Cotizaciones
           </button>
         </div>
       </div>
@@ -2792,6 +2803,19 @@ export default function AdminPage() {
               className="space-y-6"
             >
               <BannerDesigner />
+            </motion.div>
+          )}
+
+          {/* TAB: QUOTES */}
+          {activeTab === "quotes" && (
+            <motion.div
+              key="quotes"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-6"
+            >
+              <QuoteBuilder />
             </motion.div>
           )}
 
