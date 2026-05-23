@@ -494,7 +494,7 @@ export default function AdminPage() {
       if (!qrContainerRef.current) return;
       setProductToast("Preparando descarga del código QR...");
       
-      const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2 });
+      const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2, useCORS: true, allowTaint: true });
       const blobUrl = canvas.toDataURL("image/png");
       
       const link = document.createElement('a');
@@ -520,7 +520,7 @@ export default function AdminPage() {
         if (!qrContainerRef.current) return;
         setProductToast("Preparando código QR para compartir...");
         
-        const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2 });
+        const canvas = await html2canvas(qrContainerRef.current, { backgroundColor: '#18181b', scale: 2, useCORS: true, allowTaint: true });
         canvas.toBlob(async (blob) => {
           if (!blob) throw new Error("Canvas to Blob failed");
           const file = new File([blob], `qr_${(localStore.name || store.name || 'catalogo').toLowerCase().replace(/\s+/g, '_')}.png`, { type: 'image/png' });
@@ -2259,12 +2259,11 @@ export default function AdminPage() {
                       unoptimized
                     />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md border-[3px] border-white z-20 overflow-hidden">
-                      <Image 
+                      <img 
                         src={store.logoUrl || "/icon.jpg"}
                         alt="Logo"
-                        fill
-                        className="object-cover"
-                        unoptimized
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   </div>
