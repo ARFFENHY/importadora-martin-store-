@@ -223,10 +223,20 @@ export default function LandingPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="relative z-10 border-t border-white/5 py-5 text-center">
+      <footer className="relative z-10 border-t border-white/5 py-5 text-center flex flex-col items-center gap-3">
         <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">
           © {new Date().getFullYear()} {storeName} — Todos los derechos reservados.
         </p>
+
+        {/* Developer badge "by ArfenixTech" */}
+        <div className="flex flex-col items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity duration-300 select-none cursor-pointer">
+          <div className="h-6 w-6 rounded-full overflow-hidden border border-white/10 bg-black flex items-center justify-center shadow-2xs">
+            <img src="/arfenixtech-logo.jpg" alt="ArfenixTech logo" className="h-full w-full object-cover" />
+          </div>
+          <span className="text-[8px] font-black tracking-widest uppercase text-zinc-500">
+            by <span className="text-zinc-400 font-black">ArfenixTech</span>
+          </span>
+        </div>
       </footer>
 
       {/* ══════════════════════════════════════════════

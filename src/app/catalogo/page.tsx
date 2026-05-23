@@ -275,13 +275,13 @@ export default function CatalogoPage() {
             © {new Date().getFullYear()} {mounted ? store.name : "Importadora Martin Store"} - Todos los derechos reservados.
           </p>
 
-          {/* Developer badge "by ARfenixTech" */}
+          {/* Developer badge "by ArfenixTech" */}
           <div className="flex flex-col items-center gap-1.5 mt-2 opacity-60 hover:opacity-100 transition-opacity duration-300 select-none cursor-pointer">
             <div className="h-6 w-6 rounded-full overflow-hidden border border-zinc-200 bg-black flex items-center justify-center shadow-2xs">
-              <img src="/arfenixtech-logo.jpg" alt="ARfenixTech logo" className="h-full w-full object-cover" />
+              <img src="/arfenixtech-logo.jpg" alt="ArfenixTech logo" className="h-full w-full object-cover" />
             </div>
             <span className="text-[8px] font-black tracking-widest uppercase text-zinc-400">
-              by <span className="text-zinc-650 font-black">ARfenixTech</span>
+              by <span className="text-zinc-650 font-black">ArfenixTech</span>
             </span>
           </div>
         </footer>
