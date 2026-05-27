@@ -251,28 +251,27 @@ export default function AdminPage() {
   const [secStatus, setSecStatus] = useState<"idle" | "success" | "error">("idle");
   const [secErrorMsg, setSecErrorMsg] = useState("");
 
-  const handleChangeCredentials = (e: React.FormEvent) => {
+  const handleChangeCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setSecStatus("idle");
     setSecErrorMsg("");
 
-    // Validate current password
-    const { adminPassword } = useAuthStore.getState();
-    if (secCurrentPass !== adminPassword) {
+    // Validate current password is provided
+    if (!secCurrentPass) {
       setSecStatus("error");
-      setSecErrorMsg("La contraseña actual es incorrecta.");
+      setSecErrorMsg("Debes ingresar tu contraseña actual para realizar cambios.");
       return;
     }
 
-    // Validate new password length
-    if (secNewPass.length < 6) {
+    // Validate new password length if a new password is provided
+    if (secNewPass && secNewPass.length < 6) {
       setSecStatus("error");
       setSecErrorMsg("La nueva contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
     // Validate confirmation
-    if (secNewPass !== secConfirmPass) {
+    if (secNewPass && secNewPass !== secConfirmPass) {
       setSecStatus("error");
       setSecErrorMsg("Las contraseñas nuevas no coinciden.");
       return;
@@ -286,13 +285,18 @@ export default function AdminPage() {
       return;
     }
 
-    updateCredentials(finalUsername, secNewPass);
-    setSecStatus("success");
-    setSecCurrentPass("");
-    setSecNewPass("");
-    setSecConfirmPass("");
-    setSecNewUsername("");
-    setTimeout(() => setSecStatus("idle"), 4000);
+    try {
+      await updateCredentials(finalUsername, secCurrentPass, secNewPass || undefined);
+      setSecStatus("success");
+      setSecCurrentPass("");
+      setSecNewPass("");
+      setSecConfirmPass("");
+      setSecNewUsername("");
+      setTimeout(() => setSecStatus("idle"), 4000);
+    } catch (error: any) {
+      setSecStatus("error");
+      setSecErrorMsg(error.message || "Ocurrió un error al actualizar las credenciales.");
+    }
   };
 
   // Sync local states
@@ -420,7 +424,7 @@ export default function AdminPage() {
     setIsProductModalOpen(true);
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const priceNum = parseFloat(productForm.price) || 0;
@@ -445,13 +449,22 @@ export default function AdminPage() {
       stock: productForm.stock.trim() !== "" ? parseInt(productForm.stock) : undefined
     };
 
-    if (editingProduct) {
-      updateProduct(editingProduct.id, payload);
-    } else {
-      addProduct(payload);
+    try {
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, payload);
+        setProductToast("Producto actualizado con éxito ✨");
+      } else {
+        await addProduct(payload);
+        setProductToast("Producto creado con éxito ✨");
+      }
+      setIsProductModalOpen(false);
+    } catch (error: any) {
+      console.error("Error al guardar el producto:", error);
+      const errorMessage = error?.message || "Error desconocido de red o base de datos.";
+      setProductToast(`❌ Error al guardar: ${errorMessage}`);
     }
 
-    setIsProductModalOpen(false);
+    setTimeout(() => setProductToast(null), 4000);
   };
 
   const handleDeleteProduct = (id: string) => {

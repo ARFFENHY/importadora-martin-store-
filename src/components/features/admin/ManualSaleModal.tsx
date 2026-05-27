@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useProductStore, type Product } from '@/store/useProductStore';
+import { useProductStore } from '@/store/useProductStore';
+import { Product } from '@/types';
 import { useOrderStore } from '@/store/useOrderStore';
 import { X, Plus, Minus, Search, ShoppingBag, Trash2 } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
@@ -66,11 +67,8 @@ export function ManualSaleModal({ onClose, onSuccess }: ManualSaleModalProps) {
       deliveryMethod: 'pickup',
       paymentMethod,
       items: cart.map(item => ({
-        id: item.product.id,
-        name: item.product.name,
-        price: item.product.price,
-        quantity: item.quantity,
-        image: item.product.images[0]
+        ...item.product,
+        quantity: item.quantity
       })),
       total
     });

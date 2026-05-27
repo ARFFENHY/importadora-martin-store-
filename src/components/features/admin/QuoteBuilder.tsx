@@ -553,7 +553,7 @@ export function QuoteBuilder() {
                     <span className="col-span-2 text-zinc-900 font-bold">{quoteValidity || "15"} días</span>
                     
                     <span className="text-zinc-500 font-semibold">Contacto:</span>
-                    <span className="col-span-2 text-zinc-900 font-bold">{store.phone || "+54 11 XXXX-XXXX"}</span>
+                    <span className="col-span-2 text-zinc-900 font-bold">{store.whatsAppNumber || "+54 11 XXXX-XXXX"}</span>
                   </div>
                 </div>
 

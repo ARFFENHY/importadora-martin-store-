@@ -2,6 +2,15 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
+// Validar que las variables de entorno de Firebase estén presentes
+if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+  console.warn(
+    "⚠️ ALERTA DE SISTEMA (ArfenixTech):\n" +
+    "Faltan las variables de entorno de Firebase. Si has desplegado la aplicación en Vercel o en un dominio personalizado, " +
+    "debes agregar las claves de '.env.local' en el panel de Vercel (Project Settings > Environment Variables) y volver a desplegar."
+  );
+}
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,

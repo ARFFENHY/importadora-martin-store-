@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  updatePassword as firebaseUpdatePassword,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -15,7 +16,7 @@ interface AuthState {
   login: (usernameInput: string, passwordInput: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
-  updateCredentials: (newUsername: string, _newPassword: string) => void;
+  updateCredentials: (newUsername: string, currentPasswordInput: string, newPasswordInput?: string) => Promise<void>;
   initAuthListener: () => () => void;
 }
 
@@ -57,9 +58,33 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => set({ loginError: null }),
 
-      updateCredentials: (newUsername: string, _newPassword: string) => {
-        void _newPassword;
-        // Solo actualiza el nombre visual en UI (la contraseña real la maneja Firebase Auth)
+      updateCredentials: async (newUsername: string, currentPasswordInput: string, newPasswordInput?: string) => {
+        // 1. Si se desea cambiar la contraseña, validar primero con la contraseña actual
+        if (newPasswordInput && currentPasswordInput) {
+          try {
+            // Validar la contraseña actual intentando autenticar silenciosamente
+            await signInWithEmailAndPassword(auth, ADMIN_EMAIL, currentPasswordInput);
+          } catch {
+            throw new Error('La contraseña actual es incorrecta.');
+          }
+
+          // Si el login fue exitoso, cambiar la contraseña
+          if (auth.currentUser) {
+            try {
+              await firebaseUpdatePassword(auth.currentUser, newPasswordInput);
+            } catch (error: any) {
+              console.error('Error changing password in Firebase:', error);
+              if (error.code === 'auth/requires-recent-login') {
+                throw new Error('Por seguridad, por favor cierra sesión e ingresa nuevamente para cambiar tu contraseña.');
+              }
+              throw new Error('Error al actualizar la contraseña: ' + (error.message || ''));
+            }
+          } else {
+            throw new Error('No hay una sesión activa de administrador.');
+          }
+        }
+
+        // 2. Actualizar el nombre visual en el store
         set({ adminUsername: newUsername.trim() });
       },
     }),

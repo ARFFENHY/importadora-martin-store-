@@ -25,6 +25,19 @@ export default function CatalogoPage() {
   const { products, categories } = useProductStore();
   const [mounted, setMounted] = useState(false);
 
+  // Default values to use during SSR to prevent hydration mismatches
+  const displayBanner = mounted ? banner : {
+    title: 'Llegó lo NUEVO',
+    subtitle: 'Herramientas profesionales para expertos.',
+    imageUrl: 'https://images.unsplash.com/photo-1504148455328-436276d7b218?q=80&w=600',
+    badge: 'Súper Ofertas',
+  };
+
+  const displayStore = mounted ? store : {
+    name: 'Importadora Martin Store',
+    logoUrl: '/logo.png',
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setMounted(true);
@@ -87,10 +100,10 @@ export default function CatalogoPage() {
             className="overflow-hidden rounded-[2.5rem] bg-black p-8 md:p-12 border border-border relative shadow-2xl min-h-[220px] flex items-center"
           >
             {/* Background Image with cover */}
-            {banner.imageUrl && (
+            {displayBanner.imageUrl && (
               <div className="absolute inset-0 w-full h-full z-0">
                 <Image
-                  src={banner.imageUrl}
+                  src={displayBanner.imageUrl}
                   alt="Banner background"
                   fill
                   className="object-cover object-center"
@@ -105,17 +118,17 @@ export default function CatalogoPage() {
             <div className="relative z-10 flex flex-col gap-3 max-w-[450px]">
               <div className="flex items-center gap-2 text-primary">
                 <div className="h-6 w-6 rounded-full overflow-hidden border border-primary bg-white flex items-center justify-center shrink-0">
-                  <img src={store.logoUrl || "/logo.png"} alt="Logo" className="h-full w-full object-cover" />
+                  <img src={displayStore.logoUrl || "/logo.png"} alt="Logo" className="h-full w-full object-cover" />
                 </div>
                 <span className="text-xs font-bold uppercase tracking-widest">
-                  {banner.badge || "Súper Ofertas"}
+                  {displayBanner.badge || "Súper Ofertas"}
                 </span>
               </div>
               <h2 className="text-3xl md:text-4xl font-black text-white leading-tight">
-                {banner.title}
+                {displayBanner.title}
               </h2>
               <p className="text-xs md:text-sm text-zinc-300">
-                {banner.subtitle}
+                {displayBanner.subtitle}
               </p>
               <button 
                 onClick={() => {
@@ -272,7 +285,7 @@ export default function CatalogoPage() {
         {/* Footer */}
         <footer className="mt-16 border-t border-zinc-100 pt-8 pb-4 flex flex-col items-center gap-4 text-center">
           <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
-            © {new Date().getFullYear()} {mounted ? store.name : "Importadora Martin Store"} - Todos los derechos reservados.
+            © {new Date().getFullYear()} {displayStore.name} - Todos los derechos reservados.
           </p>
 
           {/* Developer badge "by ArfenixTech" */}
