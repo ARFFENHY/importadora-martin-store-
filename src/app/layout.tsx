@@ -8,7 +8,7 @@ import { WhatsAppFloating } from "@/components/ui/WhatsAppFloating";
 import { CartFloating } from "@/components/ui/CartFloating";
 import { ThemeInitializer } from "@/components/layout/ThemeInitializer";
 import { AdminNavWrapper } from "@/components/layout/AdminNavWrapper";
-import { FirestoreSync } from "@/components/layout/FirestoreSync";
+import { SupabaseSync } from "@/components/layout/SupabaseSync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,7 +58,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground custom-scrollbar">
         <ThemeInitializer />
-        <FirestoreSync />
+        <SupabaseSync />
         <AdminNavWrapper>
           {children}
         </AdminNavWrapper>

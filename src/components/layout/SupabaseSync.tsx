@@ -6,12 +6,12 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useConfigStore } from '@/store/useConfigStore';
 
 /**
- * Componente invisible que:
- * 1. Conecta el store de productos con Firestore (listener en tiempo real)
- * 2. Inicia el listener de Firebase Auth para persistir sesión entre recargas
- * 3. Conecta el store de configuración estética con Firestore (branding global)
+ * Componente invisible de sincronización en tiempo real que:
+ * 1. Suscribe el catálogo de productos y categorías a los canales de Supabase.
+ * 2. Mantiene la sesión local activa.
+ * 3. Sincroniza la configuración corporativa (Branding) desde Supabase.
  */
-export function FirestoreSync() {
+export function SupabaseSync() {
   const subscribe = useProductStore((s) => s.subscribe);
   const initAuthListener = useAuthStore((s) => s.initAuthListener);
   const subscribeConfig = useConfigStore((s) => s.subscribeConfig);

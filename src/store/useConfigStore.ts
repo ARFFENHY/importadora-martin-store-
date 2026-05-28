@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 export interface ColorsConfig {
   primary: string;
@@ -107,64 +106,139 @@ export const useConfigStore = create<ConfigState>()(
       bannerPresets: DEFAULT_PRESETS,
 
       subscribeConfig: () => {
-        const docRef = doc(db, 'config', 'branding');
-        const unsub = onSnapshot(docRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data();
-            set({
-              colors: data.colors || DEFAULT_COLORS,
-              store: data.store || DEFAULT_STORE,
-              banner: data.banner || DEFAULT_BANNER,
-            });
+        console.log('[Supabase Config] Conectando listener de branding...');
+
+        const channel = supabase
+          .channel('realtime-config')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'config', filter: 'id=eq.branding' },
+            (payload) => {
+              console.log('[Supabase Config] Configuración actualizada vía realtime:', payload);
+              if (payload.new) {
+                const data = payload.new as any;
+                set({
+                  colors: data.colors || DEFAULT_COLORS,
+                  store: data.store || DEFAULT_STORE,
+                  banner: data.banner || DEFAULT_BANNER,
+                });
+              }
+            }
+          )
+          .subscribe();
+
+        // Carga inicial
+        const loadConfig = async () => {
+          try {
+            const { data, error } = await supabase
+              .from('config')
+              .select('*')
+              .eq('id', 'branding')
+              .single();
+
+            if (error) {
+              if (error.code === 'PGRST116') {
+                console.log('[Supabase Config] Configuración branding no encontrada. Inicializando defaults...');
+                const { error: insertErr } = await supabase
+                  .from('config')
+                  .insert({
+                    id: 'branding',
+                    colors: DEFAULT_COLORS,
+                    store: DEFAULT_STORE,
+                    banner: DEFAULT_BANNER,
+                  });
+                if (insertErr) {
+                  console.error('[Supabase Config] Error al insertar defaults:', insertErr);
+                }
+              } else {
+                console.error('[Supabase Config] Error al cargar branding:', error);
+              }
+            } else if (data) {
+              set({
+                colors: data.colors || DEFAULT_COLORS,
+                store: data.store || DEFAULT_STORE,
+                banner: data.banner || DEFAULT_BANNER,
+              });
+            }
+          } catch (err) {
+            console.error('[Supabase Config] Excepción en loadConfig:', err);
           }
-        }, (error) => {
-          console.error('Error loading branding config from Firestore:', error);
-        });
-        return unsub;
+        };
+
+        void loadConfig();
+
+        return () => {
+          console.log('[Supabase Config] Limpiando listener de branding...');
+          void supabase.removeChannel(channel);
+        };
       },
 
       updateColors: (newColors) =>
         set((state) => {
           const colors = { ...state.colors, ...newColors };
-          try {
-            void setDoc(doc(db, 'config', 'branding'), {
-              colors,
-              store: state.store,
-              banner: state.banner,
-            });
-          } catch (e) {
-            console.error('Error syncing colors to Firestore:', e);
-          }
+          const sync = async () => {
+            try {
+              const { error } = await supabase
+                .from('config')
+                .upsert({
+                  id: 'branding',
+                  colors,
+                  store: state.store,
+                  banner: state.banner,
+                  updated_at: new Date().toISOString(),
+                });
+              if (error) throw error;
+            } catch (e) {
+              console.error('[Supabase Config] Error al sincronizar colores:', e);
+            }
+          };
+          void sync();
           return { colors };
         }),
 
       updateStoreConfig: (newStore) =>
         set((state) => {
           const store = { ...state.store, ...newStore };
-          try {
-            void setDoc(doc(db, 'config', 'branding'), {
-              colors: state.colors,
-              store,
-              banner: state.banner,
-            });
-          } catch (e) {
-            console.error('Error syncing store config to Firestore:', e);
-          }
+          const sync = async () => {
+            try {
+              const { error } = await supabase
+                .from('config')
+                .upsert({
+                  id: 'branding',
+                  colors: state.colors,
+                  store,
+                  banner: state.banner,
+                  updated_at: new Date().toISOString(),
+                });
+              if (error) throw error;
+            } catch (e) {
+              console.error('[Supabase Config] Error al sincronizar datos de tienda:', e);
+            }
+          };
+          void sync();
           return { store };
         }),
 
       updateHeroBanner: (newBanner) =>
         set((state) => {
           const banner = { ...state.banner, ...newBanner };
-          try {
-            void setDoc(doc(db, 'config', 'branding'), {
-              colors: state.colors,
-              store: state.store,
-              banner,
-            });
-          } catch (e) {
-            console.error('Error syncing hero banner to Firestore:', e);
-          }
+          const sync = async () => {
+            try {
+              const { error } = await supabase
+                .from('config')
+                .upsert({
+                  id: 'branding',
+                  colors: state.colors,
+                  store: state.store,
+                  banner,
+                  updated_at: new Date().toISOString(),
+                });
+              if (error) throw error;
+            } catch (e) {
+              console.error('[Supabase Config] Error al sincronizar banner hero:', e);
+            }
+          };
+          void sync();
           return { banner };
         }),
 
@@ -182,15 +256,23 @@ export const useConfigStore = create<ConfigState>()(
           banner: DEFAULT_BANNER,
           bannerPresets: DEFAULT_PRESETS,
         });
-        try {
-          void setDoc(doc(db, 'config', 'branding'), {
-            colors: DEFAULT_COLORS,
-            store: DEFAULT_STORE,
-            banner: DEFAULT_BANNER,
-          });
-        } catch (e) {
-          console.error('Error resetting Firestore config:', e);
-        }
+        const sync = async () => {
+          try {
+            const { error } = await supabase
+              .from('config')
+              .upsert({
+                id: 'branding',
+                colors: DEFAULT_COLORS,
+                store: DEFAULT_STORE,
+                banner: DEFAULT_BANNER,
+                updated_at: new Date().toISOString(),
+              });
+            if (error) throw error;
+          } catch (e) {
+            console.error('[Supabase Config] Error al restablecer configuración:', e);
+          }
+        };
+        void sync();
       },
     }),
     {
@@ -208,4 +290,3 @@ export const useConfigStore = create<ConfigState>()(
     }
   )
 );
-

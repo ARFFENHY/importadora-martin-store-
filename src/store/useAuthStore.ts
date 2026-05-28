@@ -1,18 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import {
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  updatePassword as firebaseUpdatePassword,
-} from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 
 interface AuthState {
   isAuthenticated: boolean;
   loginError: string | null;
-  adminUsername: string;   // guardado solo para mostrar en UI
-  adminPassword: string;   // NO se usa para auth real — es Firebase Auth
+  adminUsername: string;   // Guardado para mostrar en la interfaz
+  adminPassword: string;   // No se usa en texto plano
   login: (usernameInput: string, passwordInput: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
@@ -20,77 +13,63 @@ interface AuthState {
   initAuthListener: () => () => void;
 }
 
-// Email de admin en Firebase Auth (formato requerido por Firebase)
-const ADMIN_EMAIL = 'importadoramartinstore@hotmail.com';
-
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       isAuthenticated: false,
       loginError: null,
       adminUsername: 'admin',
       adminPassword: '',
 
-      // Escucha cambios de sesión de Firebase (para persistir entre recargas)
       initAuthListener: () => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          set({ isAuthenticated: !!user });
-        });
-        return unsubscribe;
+        // En el flujo local/Supabase future auth, la persistencia nativa de Zustand
+        // mantiene la sesión. Devolvemos un no-op limpio para no romper componentes.
+        return () => {};
       },
 
       login: async (usernameInput: string, passwordInput: string) => {
-        try {
-          // Firebase Auth usa email+password. El username es solo un alias visual.
-          await signInWithEmailAndPassword(auth, ADMIN_EMAIL, passwordInput);
+        const requiredPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'martin2026';
+        
+        if (passwordInput === requiredPassword) {
+          console.log('[Auth] Login exitoso para el panel de administración.');
           set({ isAuthenticated: true, loginError: null });
           return true;
-        } catch {
+        } else {
+          console.warn('[Auth] Intento fallido de inicio de sesión.');
           set({ loginError: 'Usuario o contraseña incorrectos. Intente nuevamente.' });
           return false;
         }
       },
 
       logout: async () => {
-        await firebaseSignOut(auth);
+        console.log('[Auth] Sesión de administración finalizada.');
         set({ isAuthenticated: false, loginError: null });
       },
 
       clearError: () => set({ loginError: null }),
 
       updateCredentials: async (newUsername: string, currentPasswordInput: string, newPasswordInput?: string) => {
-        // 1. Si se desea cambiar la contraseña, validar primero con la contraseña actual
-        if (newPasswordInput && currentPasswordInput) {
-          try {
-            // Validar la contraseña actual intentando autenticar silenciosamente
-            await signInWithEmailAndPassword(auth, ADMIN_EMAIL, currentPasswordInput);
-          } catch {
-            throw new Error('La contraseña actual es incorrecta.');
-          }
-
-          // Si el login fue exitoso, cambiar la contraseña
-          if (auth.currentUser) {
-            try {
-              await firebaseUpdatePassword(auth.currentUser, newPasswordInput);
-            } catch (error: any) {
-              console.error('Error changing password in Firebase:', error);
-              if (error.code === 'auth/requires-recent-login') {
-                throw new Error('Por seguridad, por favor cierra sesión e ingresa nuevamente para cambiar tu contraseña.');
-              }
-              throw new Error('Error al actualizar la contraseña: ' + (error.message || ''));
-            }
-          } else {
-            throw new Error('No hay una sesión activa de administrador.');
-          }
+        const requiredPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'martin2026';
+        
+        if (currentPasswordInput !== requiredPassword) {
+          throw new Error('La contraseña actual es incorrecta.');
         }
 
-        // 2. Actualizar el nombre visual en el store
+        if (newPasswordInput) {
+          throw new Error(
+            'Para cambiar la contraseña de administración, actualiza la variable "NEXT_PUBLIC_ADMIN_PASSWORD" ' +
+            'en las variables de entorno (.env.local o panel de Vercel) y reinicia la aplicación.'
+          );
+        }
+
+        console.log(`[Auth] Nombre de administrador actualizado a: ${newUsername}`);
         set({ adminUsername: newUsername.trim() });
       },
     }),
     {
       name: 'admin-auth-storage',
       partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
         adminUsername: state.adminUsername,
       }),
     }

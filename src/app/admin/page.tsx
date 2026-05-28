@@ -366,7 +366,7 @@ export default function AdminPage() {
       const remainingImages = targetProd && targetProd.images ? targetProd.images.slice(1) : [];
       
       console.log(`[POS Admin] Iniciando subida de foto rápida para producto ID: ${productId}`);
-      setProductToast("Subiendo imagen de producto a Firebase Storage... ⏳");
+      setProductToast("Subiendo imagen de producto a Supabase Storage... ⏳");
       
       try {
         await updateProduct(productId, { images: [base64, ...remainingImages] });
@@ -442,7 +442,7 @@ export default function AdminPage() {
 
     console.log("[POS Admin] Iniciando transacción de guardado de producto.");
     setIsSavingProduct(true);
-    setProductToast("Subiendo imágenes y guardando en Firebase... ⏳");
+    setProductToast("Subiendo imágenes y guardando en Supabase... ⏳");
 
     const priceNum = parseFloat(productForm.price) || 0;
     const origPriceNum = productForm.originalPrice ? parseFloat(productForm.originalPrice) : undefined;
@@ -472,12 +472,12 @@ export default function AdminPage() {
       if (editingProduct) {
         console.log(`[POS Admin] Actualizando producto existente ID: ${editingProduct.id}`);
         await updateProduct(editingProduct.id, payload);
-        console.log("[POS Admin] Producto actualizado con éxito en Firestore.");
+        console.log("[POS Admin] Producto actualizado con éxito en Supabase.");
         setProductToast("Producto actualizado con éxito ✨");
       } else {
-        console.log("[POS Admin] Creando nuevo producto en Firestore.");
+        console.log("[POS Admin] Creando nuevo producto en Supabase.");
         await addProduct(payload);
-        console.log("[POS Admin] Producto creado con éxito en Firestore.");
+        console.log("[POS Admin] Producto creado con éxito en Supabase.");
         setProductToast("Producto creado con éxito ✨");
       }
       setIsProductModalOpen(false);
@@ -1201,7 +1201,7 @@ export default function AdminPage() {
                       </p>
                       <p className="text-xs text-zinc-500 mt-1">
                         {products.length === 0 
-                          ? "No tienes productos en tu catálogo de Firebase. Puedes agregar uno nuevo o cargar los de demostración iniciales." 
+                          ? "No tienes productos en tu catálogo de Supabase. Puedes agregar uno nuevo o cargar los de demostración iniciales." 
                           : "Prueba con otra búsqueda o agrega un nuevo producto al catálogo."}
                       </p>
                       {products.length === 0 && (
