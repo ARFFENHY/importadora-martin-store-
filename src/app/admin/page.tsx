@@ -239,6 +239,7 @@ export default function AdminPage() {
   // Copied link toast status
   const [linkCopied, setLinkCopied] = useState(false);
   const [productToast, setProductToast] = useState<string | null>(null);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   // Security / Credentials state
   const [secNewUsername, setSecNewUsername] = useState("");
@@ -359,13 +360,24 @@ export default function AdminPage() {
 
   const handleProductCardImageUpload = (productId: string, file: File) => {
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const base64 = reader.result as string;
       const targetProd = products.find(p => p.id === productId);
       const remainingImages = targetProd && targetProd.images ? targetProd.images.slice(1) : [];
-      updateProduct(productId, { images: [base64, ...remainingImages] });
-      setProductToast("Imagen del producto actualizada con éxito");
-      setTimeout(() => setProductToast(null), 3000);
+      
+      console.log(`[POS Admin] Iniciando subida de foto rápida para producto ID: ${productId}`);
+      setProductToast("Subiendo imagen de producto a Firebase Storage... ⏳");
+      
+      try {
+        await updateProduct(productId, { images: [base64, ...remainingImages] });
+        console.log("[POS Admin] Foto rápida subida con éxito.");
+        setProductToast("Imagen del producto actualizada con éxito ✨");
+      } catch (error: any) {
+        console.error("[POS Admin] Error al actualizar foto rápida:", error);
+        setProductToast(`❌ Error al subir foto: ${error?.message || "Error de red o base de datos"}`);
+      }
+      
+      setTimeout(() => setProductToast(null), 4000);
     };
     reader.readAsDataURL(file);
   };
@@ -426,7 +438,12 @@ export default function AdminPage() {
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (isSavingProduct) return;
+
+    console.log("[POS Admin] Iniciando transacción de guardado de producto.");
+    setIsSavingProduct(true);
+    setProductToast("Subiendo imágenes y guardando en Firebase... ⏳");
+
     const priceNum = parseFloat(productForm.price) || 0;
     const origPriceNum = productForm.originalPrice ? parseFloat(productForm.originalPrice) : undefined;
     
@@ -443,25 +460,33 @@ export default function AdminPage() {
       originalPrice: origPriceNum,
       discount: discount,
       category: productForm.category,
-      images: productForm.images.length > 0 ? productForm.images : ['https://images.unsplash.com/photo-1530124560647-55e12e3f8961?q=80&w=600'],
+      images: productForm.images, // Enviamos el array tal cual, useProductStore se encarga de subir fotos y mapear URLs
       isNew: productForm.isNew,
       isFeatured: productForm.isFeatured,
       stock: productForm.stock.trim() !== "" ? parseInt(productForm.stock) : undefined
     };
 
+    console.log("[POS Admin] Payload preparado para transacción:", payload);
+
     try {
       if (editingProduct) {
+        console.log(`[POS Admin] Actualizando producto existente ID: ${editingProduct.id}`);
         await updateProduct(editingProduct.id, payload);
+        console.log("[POS Admin] Producto actualizado con éxito en Firestore.");
         setProductToast("Producto actualizado con éxito ✨");
       } else {
+        console.log("[POS Admin] Creando nuevo producto en Firestore.");
         await addProduct(payload);
+        console.log("[POS Admin] Producto creado con éxito en Firestore.");
         setProductToast("Producto creado con éxito ✨");
       }
       setIsProductModalOpen(false);
     } catch (error: any) {
-      console.error("Error al guardar el producto:", error);
+      console.error("[POS Admin] Error crítico al guardar producto:", error);
       const errorMessage = error?.message || "Error desconocido de red o base de datos.";
       setProductToast(`❌ Error al guardar: ${errorMessage}`);
+    } finally {
+      setIsSavingProduct(false);
     }
 
     setTimeout(() => setProductToast(null), 4000);
@@ -2584,15 +2609,24 @@ export default function AdminPage() {
                     <button
                       type="button"
                       onClick={() => setIsProductModalOpen(false)}
-                      className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
+                      disabled={isSavingProduct}
+                      className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 bg-black text-white hover:bg-zinc-800 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md"
+                      disabled={isSavingProduct}
+                      className="flex-1 bg-black text-white hover:bg-zinc-800 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-md disabled:bg-zinc-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      {editingProduct ? "Guardar Cambios" : "Crear Producto"}
+                      {isSavingProduct ? (
+                        <>
+                          <RefreshCw className="animate-spin" size={14} />
+                          Guardando...
+                        </>
+                      ) : (
+                        editingProduct ? "Guardar Cambios" : "Crear Producto"
+                      )}
                     </button>
                   </div>
                 </form>
